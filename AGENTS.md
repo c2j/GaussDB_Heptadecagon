@@ -2,13 +2,13 @@
 
 ## What This Repo Is
 
-This is an **umbrella/portal repository** for the GaussDB Heptadecagon open-source toolset. It contains only `README.md` and this file — no build artifacts, no source code. The 8 actual tools live in their own GitHub repos under the `c2j` org.
+This is an **umbrella/portal repository** for the GaussDB Heptadecagon open-source toolset. It contains only `README.md` and this file — no build artifacts, no source code. The 9 actual tools live in their own GitHub repos under the `c2j` org.
 
 ## Repo Structure
 
-- `README.md` — Bilingual (中文/English) overview of all 8 tools, architecture diagrams, quick-start instructions. This IS the project's landing page.
+- `README.md` — Bilingual (中文/English) overview of all 9 tools, architecture diagrams, quick-start instructions. This IS the project's landing page.
 
-## The 8 Sub-Projects (separate repos)
+## The 9 Sub-Projects (separate repos)
 
 All repos are at `https://github.com/c2j/{name}`:
 
@@ -22,6 +22,7 @@ All repos are at `https://github.com/c2j/{name}`:
 | `WDRProbe` | Rust + TypeScript (Tauri) | Tauri build chain |
 | `flux-gauss` | Python | Python tooling |
 | `SP-Complexity-Evaluator` | Java / Spring Boot | `./mvnw clean package` |
+| `rust-opengauss` | Rust | `cargo build -p gaussdb-mcp` |
 
 ## Architecture Dependency
 
@@ -31,6 +32,9 @@ ogsql-parser (foundation AST)
   ├─ metamorphosis (consumes AST)
   └─ codeweb (consumes AST)
 
+rust-opengauss (native driver + MCP Server)
+  └─ ogexplain-analyzer (can use driver for live EXPLAIN)
+
 flux-gauss, grep-excel, WDRProbe, SP-Complexity-Evaluator — independent
 ```
 
@@ -38,7 +42,7 @@ Changes to `ogsql-parser` AST output can break the three downstream tools. Coord
 
 ## Conventions
 
-- **License**: MIT across all repos
+- **License**: MIT / Apache-2.0 dual (rust-opengauss), MIT (all others)
 - **README style**: Bilingual 中文/English, structured tables, architecture ASCII art
 - **Primary language for docs**: Chinese with English translation below
 
