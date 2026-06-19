@@ -28,3 +28,6 @@
 [submodule "lib/astgrep"]
 	path = lib/astgrep
 	url = git@github.com:c2j/astgrep.git
+[submodule "lib/CodeRoughcollie"]
+	path = lib/CodeRoughcollie
+	url = git@github.com:c2j/CodeRoughcollie.git
