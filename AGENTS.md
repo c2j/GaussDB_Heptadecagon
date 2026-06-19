@@ -2,13 +2,13 @@
 
 ## What This Repo Is
 
-This is an **umbrella/portal repository** for the GaussDB Heptadecagon open-source toolset. It contains only `README.md` and this file — no build artifacts, no source code. The 10 actual tools live in their own GitHub repos under the `c2j` org.
+This is an **umbrella/portal repository** for the GaussDB Heptadecagon open-source toolset. It contains only `README.md` and this file — no build artifacts, no source code. The 11 actual tools live in their own GitHub repos under the `c2j` org.
 
 ## Repo Structure
 
-- `README.md` — Bilingual (中文/English) overview of all 10 tools, architecture diagrams, quick-start instructions. This IS the project's landing page.
+- `README.md` — Bilingual (中文/English) overview of all 11 tools, architecture diagrams, quick-start instructions. This IS the project's landing page.
 
-## The 10 Sub-Projects (separate repos)
+## The 11 Sub-Projects (separate repos)
 
 All repos are at `https://github.com/c2j/{name}`:
 
@@ -24,6 +24,7 @@ All repos are at `https://github.com/c2j/{name}`:
 | `SP-Complexity-Evaluator` | Java / Spring Boot | `./mvnw clean package` |
 | `rust-opengauss` | Rust | `cargo build -p gaussdb-mcp` |
 | `astgrep` | Rust | `cargo build --release` |
+| `CodeRoughcollie` | Rust | `cargo build --workspace` |
 
 ## Architecture Dependency
 
@@ -37,10 +38,16 @@ ogsql-parser (foundation AST)
 rust-opengauss (native driver + MCP Server)
   └─ ogexplain-analyzer (can use driver for live EXPLAIN)
 
+CodeRoughcollie (code review — top integration layer)
+  ├─ ogexplain-analyzer (consumes ogexplain-core: 28 diagnostic rules + ogsql-complexity)
+  ├─ rust-opengauss (real EXPLAIN via preset connection)
+  ├─ astgrep (Java + SQL security rules)
+  └─ codeweb (impact analysis, phase 3)
+
 flux-gauss, grep-excel, WDRProbe, SP-Complexity-Evaluator — independent
 ```
 
-Changes to `ogsql-parser` AST output can break the four downstream tools. Coordinate carefully.
+Changes to `ogsql-parser` AST output can break the four downstream tools plus CodeRoughcollie. Coordinate carefully. CodeRoughcollie is the most integrated tool — it consumes from nearly every layer.
 
 ## Conventions
 
