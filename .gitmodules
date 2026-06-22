@@ -31,3 +31,6 @@
 [submodule "lib/CodeRoughcollie"]
 	path = lib/CodeRoughcollie
 	url = git@github.com:c2j/CodeRoughcollie.git
+[submodule "lib/ogagila"]
+	path = lib/ogagila
+	url = https://github.com/c2j/ogagila
