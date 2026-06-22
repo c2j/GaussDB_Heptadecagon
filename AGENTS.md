@@ -26,6 +26,14 @@ All repos are at `https://github.com/c2j/{name}`:
 | `astgrep` | Rust | `cargo build --release` |
 | `CodeRoughcollie` | Rust | `cargo build --workspace` |
 
+## Supporting Repository (not a tool)
+
+| Repo | Role | Build |
+|------|------|-------|
+| [`ogagila`](https://github.com/c2j/ogagila) | openGauss sample database (Pagila fork) — benchmark fixture | `docker-compose up -d` |
+
+`ogagila` is **not a developer tool** — it is an openGauss (Oracle-compatible mode) port of the [Pagila](https://github.com/devrimgunduz/pagila) sample database. It feeds `ogexplain-analyzer` with ground-truth EXPLAIN ANALYZE cases for diagnostic-accuracy evaluation (Precision/Recall/F1). Cases live in `lib/ogagila/benchmark/v1/cases/OGEXP-GT-*.json`; the evaluation harness is `lib/ogexplain-analyzer/benchmark/04-evaluate/evaluate.py` (mock mode for CI, live mode against the compiled `ogexplain` binary).
+
 ## Architecture Dependency
 
 ```
@@ -43,6 +51,9 @@ CodeRoughcollie (code review — top integration layer)
   ├─ rust-opengauss (real EXPLAIN via preset connection)
   ├─ astgrep (Java + SQL security rules)
   └─ codeweb (impact analysis, phase 3)
+
+ogagila (openGauss sample DB — benchmark fixture, not a tool)
+  └─ ogexplain-analyzer (ground-truth EXPLAIN cases → P/R/F1 diagnostic-accuracy evaluation)
 
 flux-gauss, grep-excel, WDRProbe, SP-Complexity-Evaluator — independent
 ```
