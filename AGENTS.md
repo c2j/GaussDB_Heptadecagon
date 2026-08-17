@@ -2,13 +2,13 @@
 
 ## What This Repo Is
 
-This is an **umbrella/portal repository** for the GaussDB Heptadecagon open-source toolset. It contains only `README.md` and this file — no build artifacts, no source code. The 11 actual tools live in their own GitHub repos under the `c2j` org.
+This is an **umbrella/portal repository** for the GaussDB Heptadecagon open-source toolset. It contains only `README.md` and this file — no build artifacts, no source code. The 12 actual tools live in their own GitHub repos under the `c2j` org.
 
 ## Repo Structure
 
-- `README.md` — Bilingual (中文/English) overview of all 11 tools, architecture diagrams, quick-start instructions. This IS the project's landing page.
+- `README.md` — Bilingual (中文/English) overview of all 12 tools, architecture diagrams, quick-start instructions. This IS the project's landing page.
 
-## The 11 Sub-Projects (separate repos)
+## The 12 Sub-Projects (separate repos)
 
 All repos are at `https://github.com/c2j/{name}`:
 
@@ -23,6 +23,7 @@ All repos are at `https://github.com/c2j/{name}`:
 | `flux-gauss` | Python | Python tooling |
 | `SP-Complexity-Evaluator` | Java / Spring Boot | `./mvnw clean package` |
 | `rust-opengauss` | Rust | `cargo build -p gaussdb-mcp` |
+| `hepta-dbcli` | Rust | `cargo build --release -p polar-mysql --features "oracle,gaussdb"` |
 | `astgrep` | Rust | `cargo build --release` |
 | `CodeRoughcollie` | Rust | `cargo build --workspace` |
 
@@ -55,14 +56,15 @@ CodeRoughcollie (code review — top integration layer)
 ogagila (openGauss sample DB — benchmark fixture, not a tool)
   └─ ogexplain-analyzer (ground-truth EXPLAIN cases → P/R/F1 diagnostic-accuracy evaluation)
 
-flux-gauss, grep-excel, WDRProbe, SP-Complexity-Evaluator — independent
+flux-gauss, grep-excel, WDRProbe, SP-Complexity-Evaluator, hepta-dbcli — independent
+(hepta-dbcli: multi-database CLI + MCP Server for MySQL/PolarDB-X/Oracle/GaussDB — foundation-layer client, no AST dependency)
 ```
 
 Changes to `ogsql-parser` AST output can break the four downstream tools plus CodeRoughcollie. Coordinate carefully. CodeRoughcollie is the most integrated tool — it consumes from nearly every layer.
 
 ## Conventions
 
-- **License**: MIT / Apache-2.0 dual (rust-opengauss), MIT (all others)
+- **License**: MIT / Apache-2.0 dual (rust-opengauss, hepta-dbcli), MIT (all others)
 - **README style**: Bilingual 中文/English, structured tables, architecture ASCII art
 - **Primary language for docs**: Chinese with English translation below
 
