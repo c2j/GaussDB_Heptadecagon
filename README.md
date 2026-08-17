@@ -24,7 +24,7 @@
 
 ## 这是什么？
 
-GaussDB Heptadecagon 是围绕 GaussDB / openGauss 的 **一组开源开发者工具**（当前已发布11个，其余6个陆续开发中），覆盖从 SQL 解析、性能诊断、代码图谱到数据迁移的完整链路。
+GaussDB Heptadecagon 是围绕 GaussDB / openGauss 的 **一组开源开发者工具**（当前已发布12个，其余5个陆续开发中），覆盖从 SQL 解析、性能诊断、代码图谱到数据迁移的完整链路。
 
 所有工具独立可用、各自迭代，同时通过共享的 SQL 解析器（`ogsql-parser`）形成有机整体。
 
@@ -43,6 +43,7 @@ GaussDB Heptadecagon 是围绕 GaussDB / openGauss 的 **一组开源开发者�
 | [**flux-gauss**](https://github.com/c2j/flux-gauss) | 迁移 | Python | GaussDB 存储过程 → Java + iBatis 服务自动转换，MCP Server 模式 |
 | [**SP-Complexity-Evaluator**](https://github.com/c2j/SP-Complexity-Evaluator) | 评估 | Java | SQL 和存储过程复杂度评估服务，支持 Oracle/Gauss/Hive 多方言 |
 | [**rust-opengauss**](https://github.com/c2j/rust-opengauss) | 驱动 | Rust | GaussDB / openGauss 原生 Rust 驱动 + MCP Server，零 FFI 依赖，支持 SHA256/SM3 等国密认证 |
+| [**hepta-dbcli**](https://github.com/c2j/hepta-dbcli) | 客户端 | Rust | 多数据库 CLI + MCP Server，支持 MySQL/PolarDB-X/Oracle/GaussDB，一次性执行 + 交互式 REPL + OS 密钥链，只读安全 |
 | [**astgrep**](https://github.com/c2j/astgrep) | 安全 | Rust | 多语言静态代码安全分析(SAST),Semgrep 风格规则 + 污点分析,GaussDB 方言走 ogsql-parser |
 | [**CodeRoughcollie**](https://github.com/c2j/CodeRoughcollie) | 评审 | Rust | 静态 + 动态混合代码审核，消费 ogexplain-analyzer 28 条规则 + 真实 EXPLAIN + 复杂度评估 + astgrep 安全规则 |
 
@@ -73,12 +74,12 @@ GaussDB Heptadecagon 是围绕 GaussDB / openGauss 的 **一组开源开发者�
                                                      │
                       ┌──────────────────────────────▼─────────────────────────────┐
                       │                           基石层                            │
-                      │               ogsql-parser · rust-opengauss                │
-                      │           手写递归下降 · 全方言 · 原生驱动 · MCP               │
+                      │        ogsql-parser · rust-opengauss · hepta-dbcli         │
+                      │        手写递归下降 · 全方言 · 原生驱动 · 多库客户端 · MCP      │
                       └────────────────────────────────────────────────────────────┘
 ```
 
-**ogsql-parser** 是整个工具集的基石——ogexplain-analyzer、metamorphosis、codeweb、astgrep 均直接消费其 AST 输出。**rust-opengauss** 提供原生 Rust 驱动和 MCP Server，让 AI 助手直连 GaussDB/openGauss。**CodeRoughcollie** 是顶层集大成者——它消费 ogexplain-analyzer 的 28 条诊断规则、ogsql-complexity 复杂度评分、rust-opengauss 的真实 EXPLAIN 能力、astgrep 的安全规则，将全生态能力汇聚为一套代码审核流程。全部 11 个工具中有 **7 个已内置 MCP Server**（共 45 个 MCP 工具），AI 助手可覆盖从解析、诊断、重写、图谱、迁移到安全扫描的完整链路。其他工具独立运行，但共享相同的设计哲学：精确、高性能、对 GaussDB 方言的一等支持。
+**ogsql-parser** 是整个工具集的基石——ogexplain-analyzer、metamorphosis、codeweb、astgrep 均直接消费其 AST 输出。**rust-opengauss** 提供原生 Rust 驱动和 MCP Server，让 AI 助手直连 GaussDB/openGauss。**hepta-dbcli** 是基石层的多数据库客户端（understructure）——覆盖 MySQL/PolarDB-X/Oracle/GaussDB，为异构迁移场景提供统一的 CLI/REPL/MCP 入口。**CodeRoughcollie** 是顶层集大成者——它消费 ogexplain-analyzer 的 28 条诊断规则、ogsql-complexity 复杂度评分、rust-opengauss 的真实 EXPLAIN 能力、astgrep 的安全规则，将全生态能力汇聚为一套代码审核流程。全部 12 个工具中有 **8 个已内置 MCP Server**（共 51 个 MCP 工具），AI 助手可覆盖从解析、诊断、重写、图谱、迁移到安全扫描的完整链路。其他工具独立运行，但共享相同的设计哲学：精确、高性能、对 GaussDB 方言的一等支持。
 
 ---
 
@@ -178,6 +179,17 @@ GaussDB / openGauss 的原生 Rust 数据库驱动，零 FFI 依赖（无 libpq�
 - 多连接配置 + OS 密钥链安全存储密码
 - TLS 支持（disable / skip-verify / verify-full）
 
+### hepta-dbcli — 多数据库客户端
+
+Heptadecagon 的基石层多数据库客户端（understructure），CLI + MCP Server 双形态，覆盖 MySQL / PolarDB-X / Oracle / GaussDB。
+
+- **MCP Server 模式（默认）**：stdio 传输，只读安全强制（仅 SELECT / EXPLAIN / SHOW / DESCRIBE），6 个工具
+- **一次性 CLI**：命令行 / 文件 / stdin 三种 SQL 输入，table / json / vertical / csv 四种输出格式
+- **交互式 REPL**：数据库感知的 SQL 提示符，多行编辑、历史记录、dot 命令（`.connect` / `.save` / `.output`…）
+- **多连接管理**：`~/.hepta-dbcli.toml` 多连接配置，按连接独立超时（statement_timeout / connection_max_lifetime）
+- **OS 密钥链**：密码存 macOS Keychain / Linux Secret Service，明文配置自动迁移
+- 特性开关按需启用方言：`--features "oracle,gaussdb"`
+
 ### astgrep — 静态代码安全分析
 
 多语言静态代码安全分析工具（SAST），受 Semgrep 启发，基于 tree-sitter AST 与 YAML 声明式规则做模式匹配和污点分析。
@@ -208,12 +220,13 @@ GaussDB / openGauss 的原生 Rust 数据库驱动，零 FFI 依赖（无 libpq�
 
 ## MCP 生态
 
-11 个工具中已内置 **7 个 MCP Server**，共 **45 个 MCP 工具**，AI 助手（Claude Desktop、Cursor、VS Code Copilot Chat 等）可通过 stdio JSON-RPC 直接调用。
+12 个工具中已内置 **8 个 MCP Server**，共 **51 个 MCP 工具**，AI 助手（Claude Desktop、Cursor、VS Code Copilot Chat 等）可通过 stdio JSON-RPC 直接调用。
 
 | 工具 | MCP 工具数 | 能力 |
 |------|-----------|------|
 | [**ogsql-parser**](https://github.com/c2j/ogsql-parser) | 7 | SQL 解析、格式化、校验、JSON 往返、XML/Java SQL 提取 |
 | [**rust-opengauss**](https://github.com/c2j/rust-opengauss) | 6 | 数据库连接、表结构查询、只读 SQL 执行、执行计划 |
+| [**hepta-dbcli**](https://github.com/c2j/hepta-dbcli) | 6 | 多数据库（MySQL/PolarDB-X/Oracle/GaussDB）连接、表结构查询、只读 SQL 执行、执行计划 |
 | [**metamorphosis**](https://github.com/c2j/metamorphosis) | 5 | SQL 重写、探针建议、规则列表、等价性验证、Schema 提取 |
 | [**grep-excel**](https://github.com/c2j/grep-excel) | 14 | Excel/CSV 导入、搜索、SQL 执行、数据读写、保存导出 |
 | [**ogexplain-analyzer**](https://github.com/c2j/ogexplain-analyzer) | 5 | 执行计划诊断、计划解析、规则列表、优化建议、复杂度评分 |
@@ -226,6 +239,7 @@ GaussDB / openGauss 的原生 Rust 数据库驱动，零 FFI 依赖（无 libpq�
 {
   "mcpServers": {
     "gaussdb":  { "command": "/path/to/gaussdb-mcp" },
+    "dbcli":    { "command": "/path/to/hepta_dbcli" },
     "ogsql":    { "command": "/path/to/ogsql-mcp" },
     "ogexplain":{ "command": "/path/to/ogexplain-mcp" },
     "codeweb":  { "command": "/path/to/codeweb", "args": ["mcp", "--project", "/path/to/project"] },
@@ -234,7 +248,7 @@ GaussDB / openGauss 的原生 Rust 数据库驱动，零 FFI 依赖（无 libpq�
 }
 ```
 
-> **注**：astgrep 走 Axum REST API 路线，未内置 MCP Server，与上述 7 个 MCP 工具形成互补——适合 IDE 插件与 CI/CD 流水线集成场景。CodeRoughcollie（`cr-mcp-server`）MCP Server 正在三期开发中，届时将集成全生态审核能力。
+> **注**：astgrep 走 Axum REST API 路线，未内置 MCP Server，与上述 8 个 MCP 工具形成互补——适合 IDE 插件与 CI/CD 流水线集成场景。CodeRoughcollie（`cr-mcp-server`）MCP Server 正在三期开发中，届时将集成全生态审核能力。
 
 ### MCP 工具协作链路
 
@@ -250,7 +264,7 @@ ogsql-parser-mcp（格式化 → 校验语法）
 
 ### 典型协作场景
 
-下面三个场景展示大模型如何编排 7 个 MCP Server 完成真实开发任务——每一步都有工具兜底，大模型负责理解意图、编排流程、产出最终代码。
+下面三个场景展示大模型如何编排 8 个 MCP Server 完成真实开发任务——每一步都有工具兜底，大模型负责理解意图、编排流程、产出最终代码。
 
 #### 场景一：编写 Java 服务 + iBatis Mapper SQL
 
@@ -318,7 +332,7 @@ ogsql-parser-mcp（格式化 → 校验语法）
 
 | 技术 | 使用场景 |
 |------|---------|
-| **Rust** | 10/11 工具的核心语言——ogsql-parser、ogexplain-analyzer、metamorphosis、codeweb、grep-excel、WDRProbe、rust-opengauss、astgrep、CodeRoughcollie |
+| **Rust** | 10/12 工具的核心语言——ogsql-parser、ogexplain-analyzer、metamorphosis、codeweb、grep-excel、WDRProbe、rust-opengauss、hepta-dbcli、astgrep、CodeRoughcollie |
 | **Java / Spring Boot** | SP-Complexity-Evaluator |
 | **Python** | flux-gauss |
 | **TypeScript** | WDRProbe 前端 |
@@ -340,7 +354,7 @@ GaussDB / openGauss 生态目前面临的现实困境：
 | **SQL 质量不可控** | 缺乏客观的 SQL 复杂度量化和重写工具 | metamorphosis + SP-Complexity-Evaluator |
 | **方言差异大** | openGauss 特有语法（Streaming、CStore、Vector...）无专用解析器 | ogsql-parser 全方言覆盖，1646 测试；4-way 对比评测 GaussDB 语料成功率 100%（pglast 79.2% / JSqlParser 78.3%） |
 | **应用代码安全扫描缺失** | GaussDB 项目缺少针对 Java/Python + SQL 的统一安全扫描 | astgrep 提供多语言 SAST，GaussDB 方言一等支持 |
-| **AI 工具无法直连数据库** | 缺少让 AI 助手安全访问 GaussDB 的标准接口 | 11 个工具中已内置 7 个 MCP Server（共 45 个工具），覆盖直连数据库、SQL 解析、诊断、重写、图谱、迁移、数据操作、安全扫描全链路 |
+| **AI 工具无法直连数据库** | 缺少让 AI 助手安全访问 GaussDB 的标准接口 | 12 个工具中已内置 8 个 MCP Server（共 51 个工具），覆盖直连数据库、SQL 解析、诊断、重写、图谱、迁移、数据操作、安全扫描全链路 |
 | **代码审核碎片化** | SQL 反模式、执行计划风险、复杂度、安全漏洞散落在不同工具，缺乏统一审核 | CodeRoughcollie 提供静态 + 动态混合审核，一键聚合全生态 28 条诊断规则 + 真实 EXPLAIN + 复杂度评估 + 安全扫描 |
 
 ---
@@ -378,6 +392,10 @@ cd SP-Complexity-Evaluator && ./mvnw clean package
 git clone https://github.com/c2j/rust-opengauss.git
 cd rust-opengauss && cargo build -p gaussdb-mcp
 
+# 多数据库客户端（CLI + MCP Server）
+git clone https://github.com/c2j/hepta-dbcli.git
+cd hepta-dbcli && cargo build --release -p polar-mysql --features "oracle,gaussdb"
+
 # 静态代码安全分析
 git clone https://github.com/c2j/astgrep.git
 cd astgrep && cargo build --release
@@ -397,6 +415,7 @@ cd CodeRoughcollie && cargo build --workspace
 - [ ] **ogexplain-analyzer**: 新增分布式查询诊断规则
 - [ ] **grep-excel**: 增量导入、更大文件支持
 - [ ] **astgrep**: 完成 Semgrep 兼容性、扩充 GaussDB 安全规则库
+- [ ] **hepta-dbcli**: 扩展 PostgreSQL/openGauss 方言支持、丰富 REPL 能力
 - [ ] **CodeRoughcollie**: 完成插件化规则体系（C ABI）、MCP Server、语义影响分析（集成 codeweb）
 - [ ] **生态整合**: 统一 CLI 入口、跨工具工作流
 
@@ -442,7 +461,7 @@ We name this project "Heptadecagon" to honor that spirit: **using precise tools 
 
 ## What Is This?
 
-GaussDB Heptadecagon is a collection of **11 open-source developer tools** centered around GaussDB / openGauss, covering the full spectrum from SQL parsing, performance diagnostics, code graphing, data migration, to code review.
+GaussDB Heptadecagon is a collection of **12 open-source developer tools** centered around GaussDB / openGauss, covering the full spectrum from SQL parsing, performance diagnostics, code graphing, data migration, to code review.
 
 Each tool works independently while forming an organic whole through the shared SQL parser (`ogsql-parser`).
 
@@ -461,6 +480,7 @@ Each tool works independently while forming an organic whole through the shared 
 | [**flux-gauss**](https://github.com/c2j/flux-gauss) | Migration | Python | GaussDB stored procedure → Java + iBatis service auto-conversion, MCP Server mode |
 | [**SP-Complexity-Evaluator**](https://github.com/c2j/SP-Complexity-Evaluator) | Assessment | Java | SQL and stored procedure complexity scoring service with multi-dialect support |
 | [**rust-opengauss**](https://github.com/c2j/rust-opengauss) | Driver | Rust | Native GaussDB / openGauss Rust driver + MCP Server, zero FFI, SHA256/SM3 auth support |
+| [**hepta-dbcli**](https://github.com/c2j/hepta-dbcli) | Client | Rust | Multi-database CLI + MCP Server for MySQL/PolarDB-X/Oracle/GaussDB — one-shot execution, interactive REPL, OS keychain, read-only safety |
 | [**astgrep**](https://github.com/c2j/astgrep) | Security | Rust | Multi-language static code security analysis (SAST), Semgrep-style rules + taint analysis, GaussDB dialect via ogsql-parser |
 | [**CodeRoughcollie**](https://github.com/c2j/CodeRoughcollie) | Review | Rust | Static + dynamic hybrid code review — consumes ogexplain-analyzer's 28 diagnostic rules + real EXPLAIN + complexity scoring + astgrep security rules |
 
@@ -493,16 +513,27 @@ Each tool works independently while forming an organic whole through the shared 
                                                      │
                       ┌──────────────────────────────▼─────────────────────────────┐
                       │                         Foundation                         │
-                      │               ogsql-parser · rust-opengauss                │
-                      │             Hand-written · Full dialect · MCP              │
+                      │        ogsql-parser · rust-opengauss · hepta-dbcli         │
+                      │    Hand-written · Full dialect · Multi-DB client · MCP     │
                       └────────────────────────────────────────────────────────────┘
 ```
 
-**ogsql-parser** is the foundation — ogexplain-analyzer, metamorphosis, codeweb, and astgrep all consume its AST output directly. **rust-opengauss** provides a native Rust driver and MCP Server, enabling AI assistants to connect directly to GaussDB/openGauss. **CodeRoughcollie** is the top integration layer — it consumes ogexplain-analyzer's 28 diagnostic rules, ogsql-complexity scoring, rust-opengauss's real EXPLAIN capability, and astgrep's security rules, unifying the entire ecosystem into a single code review workflow. **7 out of 11 tools now ship with built-in MCP Servers** (45 MCP tools total), giving AI assistants end-to-end coverage from parsing, diagnostics, rewriting, code graphing, migration, to security scanning. The other tools operate independently but share the same design philosophy: precision, high performance, and first-class GaussDB dialect support.
+**ogsql-parser** is the foundation — ogexplain-analyzer, metamorphosis, codeweb, and astgrep all consume its AST output directly. **rust-opengauss** provides a native Rust driver and MCP Server, enabling AI assistants to connect directly to GaussDB/openGauss. **hepta-dbcli** is the multi-database client of the foundation layer (an "understructure" of Heptadecagon) — covering MySQL/PolarDB-X/Oracle/GaussDB with a unified CLI/REPL/MCP entry point for heterogeneous migration scenarios. **CodeRoughcollie** is the top integration layer — it consumes ogexplain-analyzer's 28 diagnostic rules, ogsql-complexity scoring, rust-opengauss's real EXPLAIN capability, and astgrep's security rules, unifying the entire ecosystem into a single code review workflow. **8 out of 12 tools now ship with built-in MCP Servers** (51 MCP tools total), giving AI assistants end-to-end coverage from parsing, diagnostics, rewriting, code graphing, migration, to security scanning. The other tools operate independently but share the same design philosophy: precision, high performance, and first-class GaussDB dialect support.
 
 ---
 
 ## Tool Highlights
+
+### hepta-dbcli — Multi-Database Client
+
+The multi-database client of Heptadecagon's foundation layer, dual-mode CLI + MCP Server, covering MySQL / PolarDB-X / Oracle / GaussDB.
+
+- **MCP Server mode (default)**: stdio transport, read-only safety enforcement (SELECT / EXPLAIN / SHOW / DESCRIBE only), 6 tools
+- **One-shot CLI**: SQL from command line / file / stdin, output as table / json / vertical / csv
+- **Interactive REPL**: database-aware SQL prompt with multi-line editing, history, and dot commands (`.connect` / `.save` / `.output`…)
+- **Multi-connection**: `~/.hepta-dbcli.toml` with per-connection timeout config (statement_timeout / connection_max_lifetime)
+- **OS keychain**: passwords in macOS Keychain / Linux Secret Service, automatic migration from plaintext configs
+- Feature-gated dialects: `--features "oracle,gaussdb"`
 
 ### astgrep — Static Code Security Analysis
 
@@ -542,19 +573,20 @@ Static + dynamic hybrid code review tool that aggregates the entire ecosystem's 
 | **Uncontrolled SQL quality** | No objective complexity quantification or rewriting tools | metamorphosis + SP-Complexity-Evaluator |
 | **Dialect fragmentation** | No dedicated parser for openGauss-specific syntax | ogsql-parser with full dialect coverage, 1646 tests; 4-way benchmark shows 100% GaussDB dialect success vs 79% for pglast/JSqlParser |
 | **Uncontrolled application code security** | GaussDB projects lack a unified security scanner for Java/Python + SQL | astgrep provides multi-language SAST with first-class GaussDB dialect support |
-| **No AI-to-database bridge** | No standard interface for AI assistants to safely access GaussDB | 7 out of 11 tools ship with built-in MCP Servers (45 tools total), covering database connectivity, SQL parsing, diagnostics, rewriting, code graphing, migration, data operations, and security scanning |
+| **No AI-to-database bridge** | No standard interface for AI assistants to safely access GaussDB | 8 out of 12 tools ship with built-in MCP Servers (51 tools total), covering database connectivity, SQL parsing, diagnostics, rewriting, code graphing, migration, data operations, and security scanning |
 | **Fragmented code review** | SQL antipatterns, execution plan risks, complexity, and security flaws are scattered across different tools with no unified review | CodeRoughcollie provides static + dynamic hybrid review, one-click aggregating all 28 ecosystem diagnostic rules + real EXPLAIN + complexity scoring + security scanning |
 
 ---
 
 ## MCP Ecosystem
 
-**7 out of 11 tools ship with built-in MCP Servers**, exposing **45 MCP tools** in total. AI assistants (Claude Desktop, Cursor, VS Code Copilot Chat, etc.) can invoke them directly via stdio JSON-RPC.
+**8 out of 12 tools ship with built-in MCP Servers**, exposing **51 MCP tools** in total. AI assistants (Claude Desktop, Cursor, VS Code Copilot Chat, etc.) can invoke them directly via stdio JSON-RPC.
 
 | Tool | MCP Tools | Capabilities |
 |------|-----------|-------------|
 | [**ogsql-parser**](https://github.com/c2j/ogsql-parser) | 7 | SQL parsing, formatting, validation, JSON round-trip, XML/Java SQL extraction |
 | [**rust-opengauss**](https://github.com/c2j/rust-opengauss) | 6 | Database connectivity, table metadata, read-only SQL execution, execution plans |
+| [**hepta-dbcli**](https://github.com/c2j/hepta-dbcli) | 6 | Multi-database (MySQL/PolarDB-X/Oracle/GaussDB) connectivity, table metadata, read-only SQL execution, execution plans |
 | [**metamorphosis**](https://github.com/c2j/metamorphosis) | 5 | SQL rewriting, probe suggestions, rule listing, equivalence verification, schema extraction |
 | [**grep-excel**](https://github.com/c2j/grep-excel) | 14 | Excel/CSV import, search, SQL execution, data read/write, save/export |
 | [**ogexplain-analyzer**](https://github.com/c2j/ogexplain-analyzer) | 5 | EXPLAIN diagnostics, plan parsing, rule listing, optimization suggestions, complexity scoring |
@@ -567,6 +599,7 @@ All MCP Servers are built on the [rmcp](https://crates.io/crates/rmcp) Rust SDK 
 {
   "mcpServers": {
     "gaussdb":   { "command": "/path/to/gaussdb-mcp" },
+    "dbcli":     { "command": "/path/to/hepta_dbcli" },
     "ogsql":     { "command": "/path/to/ogsql-mcp" },
     "ogexplain": { "command": "/path/to/ogexplain-mcp" },
     "codeweb":   { "command": "/path/to/codeweb", "args": ["mcp", "--project", "/path/to/project"] },
@@ -575,7 +608,7 @@ All MCP Servers are built on the [rmcp](https://crates.io/crates/rmcp) Rust SDK 
 }
 ```
 
-> **Note**: astgrep uses an Axum REST API instead of an MCP Server, complementing the 7 MCP-enabled tools above. It is a good fit for IDE plugins and CI/CD pipeline integration. CodeRoughcollie (`cr-mcp-server`) MCP Server is in phase 3 development and will integrate all ecosystem review capabilities when ready.
+> **Note**: astgrep uses an Axum REST API instead of an MCP Server, complementing the 8 MCP-enabled tools above. It is a good fit for IDE plugins and CI/CD pipeline integration. CodeRoughcollie (`cr-mcp-server`) MCP Server is in phase 3 development and will integrate all ecosystem review capabilities when ready.
 
 ### MCP Tool Collaboration
 
@@ -591,7 +624,7 @@ ogsql-parser-mcp (format → validate syntax)
 
 ### Typical Collaboration Scenarios
 
-The three scenarios below show how an LLM orchestrates the 7 MCP Servers to accomplish real development tasks — every step is backed by a tool, while the LLM focuses on understanding intent, orchestrating the flow, and producing the final code.
+The three scenarios below show how an LLM orchestrates the 8 MCP Servers to accomplish real development tasks — every step is backed by a tool, while the LLM focuses on understanding intent, orchestrating the flow, and producing the final code.
 
 #### Scenario 1: Writing a Java Service + iBatis Mapper SQL
 
@@ -687,6 +720,10 @@ cd SP-Complexity-Evaluator && ./mvnw clean package
 # Native Rust driver + MCP Server
 git clone https://github.com/c2j/rust-opengauss.git
 cd rust-opengauss && cargo build -p gaussdb-mcp
+
+# Multi-database client (CLI + MCP Server)
+git clone https://github.com/c2j/hepta-dbcli.git
+cd hepta-dbcli && cargo build --release -p polar-mysql --features "oracle,gaussdb"
 
 # Static code security analysis
 git clone https://github.com/c2j/astgrep.git

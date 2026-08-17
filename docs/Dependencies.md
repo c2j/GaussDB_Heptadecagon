@@ -1,6 +1,6 @@
 # 组件依赖关系与升级传播指南
 
-> 本文档梳理 GaussDB Heptadecagon 生态中 11 个工具之间的依赖关系，目的是当某个基础组件或中间组件升级后，能根据依赖链逐层升级、传播变更，避免下游工具因版本不匹配而构建失败或行为异常。
+> 本文档梳理 GaussDB Heptadecagon 生态中 12 个工具之间的依赖关系，目的是当某个基础组件或中间组件升级后，能根据依赖链逐层升级、传播变更，避免下游工具因版本不匹配而构建失败或行为异常。
 >
 > **最后更新**：2026-07-13（v0.8.31 基线对齐实战验证）
 
@@ -53,6 +53,7 @@
 │analyz │ │osis    │ │         │ │          │ │        │ │WDRProbe     │
 │er     │ │        │ │         │ │          │ │        │ │SP-Complex   │
 │       │ │        │ │         │ │          │ │        │ │ity-Evaluator│
+│       │ │        │ │         │ │          │ │        │ │hepta-dbcli  │
 └──┬──┬─┘ └───┬────┘ └────┬────┘ └────┬─────┘ └───┬────┘ └──────────────┘
    │    │     │           │           │           │       (无内部依赖)
    │    └─────┼───────────┼───────────┼───────────┘
@@ -75,6 +76,7 @@
 | **独立** | grep-excel | 0 | 0 |
 | **独立** | WDRProbe | 0 | 0 |
 | **独立** | SP-Complexity-Evaluator | 0 | 0 |
+| **独立** | hepta-dbcli | 0 | 0 |
 | **顶层** | CodeRoughcollie | 5（ogsql-parser、ogexplain、rust-opengauss、metamorphosis、astgrep[子进程]） | 0 |
 
 ---
@@ -335,13 +337,14 @@ metamorphosis (workspace) — ogsql-parser pin 在 [workspace.dependencies] 中�
 <a id="38-独立工具"></a>
 ### 3.8 独立工具
 
-以下 3 个工具**无任何内部依赖**，升级它们不会影响生态中其他组件：
+以下 4 个工具**无任何内部依赖**，升级它们不会影响生态中其他组件：
 
 | 工具 | 仓库 | 语言 | 构建命令 |
 |------|------|------|---------|
 | **grep-excel** | [`c2j/grep-excel`](https://github.com/c2j/grep-excel) | Rust | `cargo build --release` |
 | **WDRProbe** | [`c2j/WDRProbe`](https://github.com/c2j/WDRProbe) | Rust + TypeScript | Tauri 构建链 |
 | **SP-Complexity-Evaluator** | [`c2j/SP-Complexity-Evaluator`](https://github.com/c2j/SP-Complexity-Evaluator) | Java / Spring Boot | `./mvnw clean package` |
+| **hepta-dbcli** | [`c2j/hepta-dbcli`](https://github.com/c2j/hepta-dbcli) | Rust | `cargo build --release -p polar-mysql --features "oracle,gaussdb"` |
 
 ---
 
