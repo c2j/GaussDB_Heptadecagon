@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "hepta-dbcli · 内部架构",
+    "quality_profile": "showcase",
+    "viewBox": [1720, 880]
+  },
+  "components": [
+    { "id": "mcp-clients", "type": "external", "label": "MCP 客户端", "sublabel": "Claude · Cursor · 编码助手", "tag": "消费方", "pos": [60, 110], "size": [150, 60] },
+    { "id": "mcp-server", "type": "backend", "label": "MCP Server", "sublabel": "rmcp · stdio · 7 工具", "tag": "默认入口", "pos": [320, 110], "size": [180, 60] },
+    { "id": "cli", "type": "frontend", "label": "一次性 CLI", "sublabel": "clap · SQL/文件/stdin", "tag": "子命令 cli", "pos": [580, 110], "size": [160, 60] },
+    { "id": "repl", "type": "frontend", "label": "交互式 REPL", "sublabel": "rustyline · 方言分词", "tag": "cli -i", "pos": [840, 110], "size": [160, 60] },
+    { "id": "config", "type": "backend", "label": "配置解析", "sublabel": "TOML · HEPTA_DBCLI_URL", "tag": "多连接", "pos": [1100, 110], "size": [170, 60] },
+    { "id": "registry", "type": "backend", "label": "后端注册中心", "sublabel": "BackendRegistry · trait 契约", "tag": "scheme 路由", "pos": [180, 350], "size": [200, 74] },
+    { "id": "delta-diff", "type": "backend", "label": "delta-diff 引擎", "sublabel": "hash/join/bucket/IBLT", "tag": "表数据比对", "pos": [560, 350], "size": [200, 74] },
+    { "id": "mysql-be", "type": "backend", "label": "MySQL 后端", "sublabel": "mysql_async · 只读闸门", "tag": "默认后端", "pos": [180, 500], "size": [200, 68] },
+    { "id": "oracle-be", "type": "backend", "label": "Oracle 后端", "sublabel": "oracle-rs → ODPI-C 回退", "tag": "双驱动", "pos": [480, 500], "size": [200, 68] },
+    { "id": "gaussdb-be", "type": "backend", "label": "GaussDB 后端", "sublabel": "rust-opengauss · native-tls", "tag": "特性门控", "pos": [780, 500], "size": [200, 68] },
+    { "id": "mysql-server", "type": "database", "label": "MySQL / PolarDB-X", "sublabel": "information_schema", "tag": "3306", "pos": [180, 660], "size": [200, 64] },
+    { "id": "oracle-server", "type": "database", "label": "Oracle", "sublabel": "数据字典", "tag": "1521", "pos": [480, 660], "size": [200, 64] },
+    { "id": "gaussdb-server", "type": "database", "label": "GaussDB / openGauss", "sublabel": "系统目录", "tag": "5432", "pos": [780, 660], "size": [200, 64] },
+    { "id": "os-keyring", "type": "security", "label": "OS 密钥链", "sublabel": "Keychain · Secret Service", "tag": "凭据", "pos": [1300, 660], "size": [180, 64] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "接口层 · 对外入口", "wraps": ["mcp-clients", "mcp-server", "cli", "repl", "config"] },
+    { "kind": "region", "label": "核心层 · 多库抽象与执行", "wraps": ["registry", "delta-diff", "mysql-be", "oracle-be", "gaussdb-be"] },
+    { "kind": "region", "label": "外部依赖 · 数据源与凭据", "wraps": ["mysql-server", "oracle-server", "gaussdb-server", "os-keyring"] }
+  ],
+  "connections": [
+    { "id": "c1", "from": "mcp-clients", "to": "mcp-server", "label": "stdio · JSON-RPC 工具调用", "variant": "emphasis", "fromSide": "right", "toSide": "left", "labelAt": [265, 184] },
+    { "id": "c2", "from": "mcp-server", "to": "registry", "label": "连接解析 · 只读执行", "variant": "emphasis", "fromSide": "bottom", "toSide": "top" },
+    { "id": "c3", "from": "registry", "to": "mysql-be", "label": "scheme 路由 · 默认后端", "variant": "emphasis", "fromSide": "bottom", "toSide": "top", "labelAt": [205, 438] },
+    { "id": "c4", "from": "mysql-be", "to": "mysql-server", "label": "SQL · 协议", "variant": "emphasis", "fromSide": "bottom", "toSide": "top", "labelAt": [215, 582] },
+    { "id": "c5", "from": "mysql-server", "to": "mysql-be", "label": "结果集 · QueryResult 回流", "variant": "emphasis", "fromSide": "top", "toSide": "bottom", "labelAt": [145, 640] },
+    { "id": "c8", "from": "repl", "to": "config", "label": "读取连接配置", "fromSide": "right", "toSide": "left" },
+    { "id": "c9", "from": "config", "to": "os-keyring", "label": "密码读取 · 明文自动迁移", "variant": "security", "fromSide": "bottom", "toSide": "top" },
+    { "id": "c10", "from": "mcp-server", "to": "delta-diff", "label": "delta_diff 工具", "fromSide": "right", "toSide": "top", "via": [[540, 140], [540, 240], [660, 240]] },
+    { "id": "c12", "from": "delta-diff", "to": "registry", "label": "双侧连接池", "fromSide": "left", "toSide": "right" },
+    { "id": "c13", "from": "registry", "to": "oracle-be", "label": "scheme 路由 · 双驱动回退", "fromSide": "bottom", "toSide": "top", "labelDy": -14 },
+    { "id": "c14", "from": "registry", "to": "gaussdb-be", "label": "scheme 路由 · 特性门控", "fromSide": "bottom", "toSide": "top", "labelDy": -14 },
+    { "id": "c15", "from": "oracle-be", "to": "oracle-server", "label": "SQL · 协议", "fromSide": "bottom", "toSide": "top", "labelDy": 24 },
+    { "id": "c16", "from": "gaussdb-be", "to": "gaussdb-server", "label": "SQL · TLS", "fromSide": "bottom", "toSide": "top", "labelDy": 24 }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "主路径 · MCP 只读查询",
+      "items": [
+        "默认入口：无子命令即启动 MCP Server（rmcp · stdio），共 7 个工具",
+        "execute_query 只读闸门：仅 SELECT / EXPLAIN / SHOW / DESC（Oracle、GaussDB 收紧为 SELECT / EXPLAIN / WITH）",
+        "dialect 自动追加 LIMIT / FETCH FIRST 限制行数，超限截断并返回 hint"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "多库后端抽象",
+      "items": [
+        "核心契约：DbPool / DbConn / Dialect 三 trait + BackendFactory，QueryResult 统一为 JSON 行集",
+        "新增数据库只需实现 4 个接口，server / cli / interactive 消费方零改动",
+        "CLI 与 REPL 复用同一 registry 执行路径（cli.rs / interactive.rs 共用 execute_query）",
+        "BackendRegistry 按 URL scheme 路由，Oracle 双驱动连接失败自动回退"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "delta-diff 比对引擎",
+      "items": [
+        "同时暴露为 CLI 子命令（--delta-diff）与 MCP 第 7 个工具 delta_diff",
+        "auto 路由：整型键 → join/IBLT 快路径，无键 → bucket 多重集合比对",
+        "行哈希规范化 + 位片校验和 + keyset 分页 + 二分定位，差异行二次复核",
+        "快照一致性（Oracle AS OF SCN）、断点续传、增量比对（--update-column）"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "特性门控与兼容",
+      "items": [
+        "Cargo features：oracle-rs / oracle / gaussdb（默认全开），release 构建 --features oracle,gaussdb",
+        "Oracle 双驱动：oracle-rs 纯 Rust（12c+）优先，ODPI-C 原生（11g+）回退",
+        "旧名 polar-mysql 向后兼容：配置文件、密钥链服务、环境变量自动迁移"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "凭据与运维",
+      "items": [
+        "密码哨兵值 keyring → 读 OS 密钥链（service hepta-dbcli，account {连接}#{路径哈希}），明文首连自动迁移",
+        "连接池按 connection_max_lifetime 回收，语句级 timeout 可选 cancel / disconnect",
+        "tracing 每日滚动日志；父进程死亡看门狗 + SIGINT/SIGTERM 优雅退出"
+      ]
+    }
+  ]
+}

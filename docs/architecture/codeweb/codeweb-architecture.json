@@ -1,0 +1,664 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "codeweb · 内部架构",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1720,
+      880
+    ],
+    "views": [
+      {
+        "id": "analyze-path",
+        "label": "主路径 · 解析管线",
+        "focus": [
+          "sources",
+          "loader",
+          "extractor",
+          "builder",
+          "store",
+          "query",
+          "cli"
+        ],
+        "note": "项目源码 → 扫描加载 → SQL/存储过程提取 → 图谱构建 → 持久化 → 查询 → 命令行"
+      },
+      {
+        "id": "llm-query",
+        "label": "AI 查询路径",
+        "focus": [
+          "query",
+          "mcp",
+          "rest"
+        ],
+        "note": "图谱查询引擎通过 MCP(6 工具) 与 REST /api/v1 对外提供"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "cli",
+      "type": "frontend",
+      "label": "CLI 命令",
+      "sublabel": "init/analyze/diff/export/merge",
+      "tag": "入口",
+      "pos": [
+        60,
+        90
+      ],
+      "size": [
+        190,
+        72
+      ]
+    },
+    {
+      "id": "tui",
+      "type": "frontend",
+      "label": "TUI",
+      "sublabel": "ratatui 交互",
+      "pos": [
+        340,
+        90
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "rest",
+      "type": "backend",
+      "label": "REST + Web UI",
+      "sublabel": "axum /api/v1 · Cytoscape.js",
+      "pos": [
+        620,
+        90
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "mcp",
+      "type": "backend",
+      "label": "MCP Server",
+      "sublabel": "rmcp stdio · 6 工具",
+      "pos": [
+        900,
+        90
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "export",
+      "type": "backend",
+      "label": "导出器",
+      "sublabel": "DOT/JSON/Mermaid/NDJSON",
+      "pos": [
+        1180,
+        90
+      ],
+      "size": [
+        190,
+        72
+      ]
+    },
+    {
+      "id": "loader",
+      "type": "backend",
+      "label": "扫描加载管线",
+      "sublabel": "scanner · loaders",
+      "tag": "入口分析",
+      "pos": [
+        60,
+        300
+      ],
+      "size": [
+        190,
+        64
+      ]
+    },
+    {
+      "id": "builder",
+      "type": "backend",
+      "label": "图谱构建",
+      "sublabel": "petgraph · 节点/边",
+      "pos": [
+        430,
+        300
+      ],
+      "size": [
+        190,
+        64
+      ]
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "GraphStore",
+      "sublabel": "bincode 持久化",
+      "pos": [
+        800,
+        300
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "query",
+      "type": "backend",
+      "label": "查询引擎",
+      "sublabel": "callers/callees/trace/lineage",
+      "pos": [
+        1170,
+        300
+      ],
+      "size": [
+        190,
+        64
+      ]
+    },
+    {
+      "id": "extractor",
+      "type": "backend",
+      "label": "SQL/存储过程提取",
+      "sublabel": "ogsql Visitor 遍历",
+      "pos": [
+        340,
+        530
+      ],
+      "size": [
+        190,
+        64
+      ]
+    },
+    {
+      "id": "java",
+      "type": "backend",
+      "label": "Java 方法提取",
+      "sublabel": "tree-sitter-java",
+      "pos": [
+        620,
+        530
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "ibatis",
+      "type": "backend",
+      "label": "iBatis/MyBatis 加载",
+      "sublabel": "XML Mapper SQL",
+      "pos": [
+        900,
+        530
+      ],
+      "size": [
+        190,
+        64
+      ]
+    },
+    {
+      "id": "cgef",
+      "type": "backend",
+      "label": "CGEF 导入/合并",
+      "sublabel": "跨团队图谱聚合",
+      "pos": [
+        1180,
+        530
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "sources",
+      "type": "external",
+      "label": "项目源码",
+      "sublabel": "Java · SQL · XML · JSP",
+      "pos": [
+        60,
+        760
+      ],
+      "size": [
+        190,
+        64
+      ]
+    },
+    {
+      "id": "ogsql",
+      "type": "external",
+      "label": "ogsql-parser",
+      "sublabel": "AST · ibatis/java 特性",
+      "pos": [
+        620,
+        760
+      ],
+      "size": [
+        190,
+        64
+      ]
+    },
+    {
+      "id": "treesitter",
+      "type": "external",
+      "label": "tree-sitter-java",
+      "sublabel": "语法树 · 0.24/0.23",
+      "pos": [
+        1180,
+        760
+      ],
+      "size": [
+        190,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "接口层",
+      "wraps": [
+        "cli",
+        "tui",
+        "rest",
+        "mcp",
+        "export"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "核心层 · 解析与图谱",
+      "wraps": [
+        "loader",
+        "builder",
+        "store",
+        "query",
+        "extractor",
+        "java",
+        "ibatis",
+        "cgef"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "外部依赖",
+      "wraps": [
+        "sources",
+        "ogsql",
+        "treesitter"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "from": "sources",
+      "to": "loader",
+      "label": "项目文件扫描",
+      "variant": "emphasis",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "via": [
+        [
+          155,
+          500
+        ]
+      ]
+    },
+    {
+      "id": "c2",
+      "from": "loader",
+      "to": "extractor",
+      "label": "SQL · 存储过程",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "top",
+      "via": [
+        [
+          300,
+          332
+        ],
+        [
+          300,
+          460
+        ],
+        [
+          435,
+          460
+        ]
+      ]
+    },
+    {
+      "id": "c3",
+      "from": "extractor",
+      "to": "builder",
+      "label": "过程节点",
+      "variant": "emphasis",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "via": [
+        [
+          435,
+          470
+        ],
+        [
+          480,
+          470
+        ],
+        [
+          480,
+          400
+        ],
+        [
+          525,
+          400
+        ]
+      ],
+      "labelAt": [
+        490,
+        440
+      ]
+    },
+    {
+      "id": "c4",
+      "from": "builder",
+      "to": "store",
+      "label": "图谱写入",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c5",
+      "from": "store",
+      "to": "query",
+      "label": "图谱读取",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c6",
+      "from": "query",
+      "to": "cli",
+      "label": "查询 · 导出",
+      "variant": "emphasis",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "via": [
+        [
+          1265,
+          210
+        ],
+        [
+          155,
+          210
+        ],
+        [
+          155,
+          190
+        ]
+      ],
+      "labelAt": [
+        600,
+        210
+      ]
+    },
+    {
+      "id": "c9",
+      "from": "java",
+      "to": "builder",
+      "label": "方法节点",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "via": [
+        [
+          705,
+          490
+        ],
+        [
+          640,
+          490
+        ],
+        [
+          640,
+          400
+        ],
+        [
+          525,
+          400
+        ]
+      ]
+    },
+    {
+      "id": "c10",
+      "from": "ibatis",
+      "to": "builder",
+      "label": "SQL 节点",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "via": [
+        [
+          995,
+          380
+        ],
+        [
+          680,
+          380
+        ],
+        [
+          680,
+          400
+        ],
+        [
+          525,
+          400
+        ]
+      ],
+      "labelAt": [
+        838,
+        390
+      ]
+    },
+    {
+      "id": "c11",
+      "from": "query",
+      "to": "tui",
+      "label": "交互查询",
+      "fromSide": "left",
+      "toSide": "bottom",
+      "via": [
+        [
+          1160,
+          332
+        ],
+        [
+          1160,
+          220
+        ],
+        [
+          425,
+          220
+        ],
+        [
+          425,
+          190
+        ]
+      ]
+    },
+    {
+      "id": "c12",
+      "from": "query",
+      "to": "rest",
+      "label": "REST 查询",
+      "fromSide": "right",
+      "toSide": "bottom",
+      "via": [
+        [
+          1370,
+          332
+        ],
+        [
+          1370,
+          230
+        ],
+        [
+          705,
+          230
+        ],
+        [
+          705,
+          190
+        ]
+      ],
+      "labelAt": [
+        1200,
+        230
+      ]
+    },
+    {
+      "id": "c13",
+      "from": "query",
+      "to": "mcp",
+      "label": "MCP 查询",
+      "fromSide": "bottom",
+      "toSide": "bottom",
+      "via": [
+        [
+          1265,
+          430
+        ],
+        [
+          1400,
+          430
+        ],
+        [
+          1400,
+          190
+        ],
+        [
+          985,
+          190
+        ]
+      ]
+    },
+    {
+      "id": "c15",
+      "from": "cgef",
+      "to": "store",
+      "label": "合并/导入",
+      "fromSide": "top",
+      "toSide": "left",
+      "via": [
+        [
+          1265,
+          480
+        ],
+        [
+          1160,
+          480
+        ],
+        [
+          1160,
+          370
+        ],
+        [
+          790,
+          370
+        ],
+        [
+          790,
+          332
+        ]
+      ]
+    },
+    {
+      "id": "c16",
+      "from": "ogsql",
+      "to": "extractor",
+      "label": "AST (Visitor)"
+    },
+    {
+      "id": "c17",
+      "from": "ogsql",
+      "to": "ibatis",
+      "label": "XML SQL 解析",
+      "fromSide": "right",
+      "toSide": "left",
+      "via": [
+        [
+          870,
+          792
+        ],
+        [
+          870,
+          562
+        ],
+        [
+          890,
+          562
+        ]
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "增量与性能",
+      "items": [
+        "增量分析：blake3 内容指纹 (fingerprint.rs) 跳过未变更文件",
+        "并行解析：rayon 并行加载；cached GraphStore 增量重解析",
+        "i18n：rust-i18n 内置 zh-CN / en 双语"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "接口与特性门控",
+      "items": [
+        "features：cli / tui / serve / mcp / jsp / search-sql-v2；full 全开",
+        "REST /api/v1 + 内嵌 Cytoscape.js 浏览器 UI（dagre 布局，callers/callees 面板）",
+        "MCP 6 工具：stats / nodes / node_detail / trace / search_sql / query",
+        "CGEF：Code Graph Exchange Format（schema.json + 校验器），跨团队合并",
+        "iBatis/MyBatis 加载（ogsql-parser ibatis 特性解析 Mapper XML）产出的 SQL 节点并入图谱",
+        "Java 方法提取（tree-sitter-java）与 iBatis/MyBatis 加载由扫描加载管线调度；图中以加载管线→SQL 提取为主路径，其余提取器关系见卡片",
+        "导出器（DOT/JSON/Mermaid/NDJSON）由 CLI export 子命令驱动，从 GraphStore 读图导出"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "图谱模型",
+      "items": [
+        "节点键 (key.rs)：namespace/class/method/SQL 标识，petgraph 有向图 + serde",
+        "双向查询：callers() / callees() / trace() / impact()",
+        "血缘 (lineage.rs)：语句级归因 + flow/ref 角色展示（v0.9 新增）",
+        "SQL 搜索：search-sql-v2 特性（sql_match.rs）"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "外部依赖",
+      "items": [
+        "ogsql-parser：git rev 锁定 (d88306a)，features = [\"ibatis\", \"java\"]",
+        "tree-sitter 0.24 + tree-sitter-java 0.23（JSP 走预处理器）",
+        "petgraph 0.7 (serde) · blake3 · bincode · rayon · walkdir · encoding_rs",
+        "上游集成的注意点：codeweb×astgrep sql-pattern-search 受 tree-sitter 0.24/0.25 冲突阻断",
+        "Java 方法提取基于 tree-sitter-java 0.23 语法树（图中以卡片说明，JSP 走预处理器）"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "消费方与计划",
+      "items": [
+        "被 CodeRoughcollie 子进程调用（--codeweb-analyze，阶段三影响分析）",
+        "升级链路：ogsql-parser AST 变更 → extractor.java (3108 行) / builder.rs (3966 行) 联动",
+        "计划：Kotlin/Go 语言支持、语义影响分析增强"
+      ]
+    }
+  ]
+}

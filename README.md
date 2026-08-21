@@ -32,20 +32,20 @@ GaussDB Heptadecagon 是围绕 GaussDB / openGauss 的 **一组开源开发者�
 
 ## 工具总览
 
-| 工具 | 定位 | 语言 | 一句话说明 |
-|------|------|------|-----------|
-| [**ogsql-parser**](https://github.com/c2j/ogsql-parser) | 基石 | Rust | 手写递归下降 SQL 解析器，717 关键字、180+ 语句类型、1646 测试用例，openGauss/GaussDB 全方言覆盖；4-way 对比评测领先 sqlparser-rs/pglast/JSqlParser（吞吐 2.4–423×，GaussDB 方言 100% 成功率） |
-| [**ogexplain-analyzer**](https://github.com/c2j/ogexplain-analyzer) | 诊断 | Rust | EXPLAIN 执行计划解析 + 25 条诊断规则，自动输出优化建议，MCP Server 模式；诊断准确率以 [`ogagila`](https://github.com/c2j/ogagila) 示例库为 benchmark（Precision/Recall/F1） |
-| [**metamorphosis**](https://github.com/c2j/metamorphosis) | 重写 | Rust | SQL 语义重写引擎，基于 AST 的可插拔规则链，安全/条件/人工三级执行策略 |
-| [**codeweb**](https://github.com/c2j/codeweb) | 图谱 | Rust | 跨 SQL + Java + MyBatis 的语义调用图，`Java 方法 → Mapper → SQL → 存储过程` 全链路追踪，MCP Server 模式 |
-| [**grep-excel**](https://github.com/c2j/grep-excel) | 数据 | Rust | 基于 DuckDB 的 Excel/CSV 搜索引擎，TUI 交互 + MCP Server 模式 |
-| [**WDRProbe**](https://github.com/c2j/WDRProbe) | 运维 | Rust+TS | GaussDB WDR 报告桌面分析工具 |
-| [**flux-gauss**](https://github.com/c2j/flux-gauss) | 迁移 | Python | GaussDB 存储过程 → Java + iBatis 服务自动转换，MCP Server 模式 |
-| [**SP-Complexity-Evaluator**](https://github.com/c2j/SP-Complexity-Evaluator) | 评估 | Java | SQL 和存储过程复杂度评估服务，支持 Oracle/Gauss/Hive 多方言 |
-| [**rust-opengauss**](https://github.com/c2j/rust-opengauss) | 驱动 | Rust | GaussDB / openGauss 原生 Rust 驱动 + MCP Server，零 FFI 依赖，支持 SHA256/SM3 等国密认证 |
-| [**hepta-dbcli**](https://github.com/c2j/hepta-dbcli) | 客户端 | Rust | 多数据库 CLI + MCP Server，支持 MySQL/PolarDB-X/Oracle/GaussDB，一次性执行 + 交互式 REPL + OS 密钥链，只读安全 |
-| [**astgrep**](https://github.com/c2j/astgrep) | 安全 | Rust | 多语言静态代码安全分析(SAST),Semgrep 风格规则 + 污点分析,GaussDB 方言走 ogsql-parser |
-| [**CodeRoughcollie**](https://github.com/c2j/CodeRoughcollie) | 评审 | Rust | 静态 + 动态混合代码审核，消费 ogexplain-analyzer 28 条规则 + 真实 EXPLAIN + 复杂度评估 + astgrep 安全规则 |
+| 工具 | 定位 | 语言 | 架构图 | 一句话说明 |
+|------|------|------|------|-----------|
+| [**ogsql-parser**](https://github.com/c2j/ogsql-parser) | 基石 | Rust | [查看](docs/architecture/ogsql-parser/ogsql-parser-architecture.html) | 手写递归下降 SQL 解析器，717 关键字、180+ 语句类型、1646 测试用例，openGauss/GaussDB 全方言覆盖；4-way 对比评测领先 sqlparser-rs/pglast/JSqlParser（吞吐 2.4–423×，GaussDB 方言 100% 成功率） |
+| [**ogexplain-analyzer**](https://github.com/c2j/ogexplain-analyzer) | 诊断 | Rust | [查看](docs/architecture/ogexplain-analyzer/ogexplain-analyzer-architecture.html) | EXPLAIN 执行计划解析 + 25 条诊断规则，自动输出优化建议，MCP Server 模式；诊断准确率以 [`ogagila`](https://github.com/c2j/ogagila) 示例库为 benchmark（Precision/Recall/F1） |
+| [**metamorphosis**](https://github.com/c2j/metamorphosis) | 重写 | Rust | [查看](docs/architecture/metamorphosis/metamorphosis-architecture.html) | SQL 语义重写引擎，基于 AST 的可插拔规则链，安全/条件/人工三级执行策略 |
+| [**codeweb**](https://github.com/c2j/codeweb) | 图谱 | Rust | [查看](docs/architecture/codeweb/codeweb-architecture.html) | 跨 SQL + Java + MyBatis 的语义调用图，`Java 方法 → Mapper → SQL → 存储过程` 全链路追踪，MCP Server 模式 |
+| [**grep-excel**](https://github.com/c2j/grep-excel) | 数据 | Rust | [查看](docs/architecture/grep-excel/grep-excel-architecture.html) | 基于 DuckDB 的 Excel/CSV 搜索引擎，TUI 交互 + MCP Server 模式 |
+| [**WDRProbe**](https://github.com/c2j/WDRProbe) | 运维 | Rust+TS | [查看](docs/architecture/WDRProbe/WDRProbe-architecture.html) | GaussDB WDR 报告桌面分析工具 |
+| [**flux-gauss**](https://github.com/c2j/flux-gauss) | 迁移 | Python | [查看](docs/architecture/flux-gauss/flux-gauss-architecture.html) | GaussDB 存储过程 → Java + iBatis 服务自动转换，MCP Server 模式 |
+| [**SP-Complexity-Evaluator**](https://github.com/c2j/SP-Complexity-Evaluator) | 评估 | Java | [查看](docs/architecture/SP-Complexity-Evaluator/SP-Complexity-Evaluator-architecture.html) | SQL 和存储过程复杂度评估服务，支持 Oracle/Gauss/Hive 多方言 |
+| [**rust-opengauss**](https://github.com/c2j/rust-opengauss) | 驱动 | Rust | [查看](docs/architecture/rust-opengauss/rust-opengauss-architecture.html) | GaussDB / openGauss 原生 Rust 驱动 + MCP Server，零 FFI 依赖，支持 SHA256/SM3 等国密认证 |
+| [**hepta-dbcli**](https://github.com/c2j/hepta-dbcli) | 客户端 | Rust | [查看](docs/architecture/hepta-dbcli/hepta-dbcli-architecture.html) | 多数据库 CLI + MCP Server，支持 MySQL/PolarDB-X/Oracle/GaussDB，一次性执行 + 交互式 REPL + OS 密钥链，只读安全 |
+| [**astgrep**](https://github.com/c2j/astgrep) | 安全 | Rust | [查看](docs/architecture/astgrep/astgrep-architecture.html) | 多语言静态代码安全分析(SAST),Semgrep 风格规则 + 污点分析,GaussDB 方言走 ogsql-parser |
+| [**CodeRoughcollie**](https://github.com/c2j/CodeRoughcollie) | 评审 | Rust | [查看](docs/architecture/CodeRoughcollie/CodeRoughcollie-architecture.html) | 静态 + 动态混合代码审核，消费 ogexplain-analyzer 28 条规则 + 真实 EXPLAIN + 复杂度评估 + astgrep 安全规则 |
 
 ---
 
@@ -80,6 +80,17 @@ GaussDB Heptadecagon 是围绕 GaussDB / openGauss 的 **一组开源开发者�
 ```
 
 **ogsql-parser** 是整个工具集的基石——ogexplain-analyzer、metamorphosis、codeweb、astgrep 均直接消费其 AST 输出。**rust-opengauss** 提供原生 Rust 驱动和 MCP Server，让 AI 助手直连 GaussDB/openGauss。**hepta-dbcli** 是基石层的多数据库客户端（understructure）——覆盖 MySQL/PolarDB-X/Oracle/GaussDB，为异构迁移场景提供统一的 CLI/REPL/MCP 入口。**CodeRoughcollie** 是顶层集大成者——它消费 ogexplain-analyzer 的 28 条诊断规则、ogsql-complexity 复杂度评分、rust-opengauss 的真实 EXPLAIN 能力、astgrep 的安全规则，将全生态能力汇聚为一套代码审核流程。全部 12 个工具中有 **8 个已内置 MCP Server**（共 51 个 MCP 工具），AI 助手可覆盖从解析、诊断、重写、图谱、迁移到安全扫描的完整链路。其他工具独立运行，但共享相同的设计哲学：精确、高性能、对 GaussDB 方言的一等支持。
+
+
+### 架构图
+
+全部架构图由 [archify](https://github.com/tt-a1i/archify) 生成，为自包含交互式 HTML（浏览器直接打开；同目录下 `.json` 为可复现规格）。
+
+| 范围 | 图 |
+|------|-----|
+| 伞顶 · 高层运行时架构 | [runtime-architecture.html](docs/architecture/runtime-architecture.html) |
+| 12 个组件内部架构 | 见上方「工具总览」表中「架构图」列 |
+
 
 ---
 
@@ -469,20 +480,20 @@ Each tool works independently while forming an organic whole through the shared 
 
 ## Tool Overview
 
-| Tool | Role | Lang | Summary |
-|------|------|------|---------|
-| [**ogsql-parser**](https://github.com/c2j/ogsql-parser) | Foundation | Rust | Hand-written recursive descent SQL parser — 717 keywords, 180+ statement types, 1646 tests, full openGauss/GaussDB dialect coverage; 4-way benchmark vs sqlparser-rs/pglast/JSqlParser — 2.4–423× throughput, 100% GaussDB dialect success |
-| [**ogexplain-analyzer**](https://github.com/c2j/ogexplain-analyzer) | Diagnostics | Rust | EXPLAIN plan parser + 25 diagnostic rules with optimization suggestions, MCP Server mode; diagnostic accuracy benchmarked against the [`ogagila`](https://github.com/c2j/ogagila) sample DB (Precision/Recall/F1) |
-| [**metamorphosis**](https://github.com/c2j/metamorphosis) | Rewriting | Rust | SQL semantic rewriting engine with pluggable rule chain on AST |
-| [**codeweb**](https://github.com/c2j/codeweb) | Graph | Rust | Cross SQL + Java + MyBatis semantic call graph — full `Java Method → Mapper → SQL → Stored Procedure` chain tracing, MCP Server mode |
-| [**grep-excel**](https://github.com/c2j/grep-excel) | Data | Rust | DuckDB-powered Excel/CSV search engine with TUI + MCP Server mode |
-| [**WDRProbe**](https://github.com/c2j/WDRProbe) | Operations | Rust+TS | GaussDB WDR report desktop analysis tool |
-| [**flux-gauss**](https://github.com/c2j/flux-gauss) | Migration | Python | GaussDB stored procedure → Java + iBatis service auto-conversion, MCP Server mode |
-| [**SP-Complexity-Evaluator**](https://github.com/c2j/SP-Complexity-Evaluator) | Assessment | Java | SQL and stored procedure complexity scoring service with multi-dialect support |
-| [**rust-opengauss**](https://github.com/c2j/rust-opengauss) | Driver | Rust | Native GaussDB / openGauss Rust driver + MCP Server, zero FFI, SHA256/SM3 auth support |
-| [**hepta-dbcli**](https://github.com/c2j/hepta-dbcli) | Client | Rust | Multi-database CLI + MCP Server for MySQL/PolarDB-X/Oracle/GaussDB — one-shot execution, interactive REPL, OS keychain, read-only safety |
-| [**astgrep**](https://github.com/c2j/astgrep) | Security | Rust | Multi-language static code security analysis (SAST), Semgrep-style rules + taint analysis, GaussDB dialect via ogsql-parser |
-| [**CodeRoughcollie**](https://github.com/c2j/CodeRoughcollie) | Review | Rust | Static + dynamic hybrid code review — consumes ogexplain-analyzer's 28 diagnostic rules + real EXPLAIN + complexity scoring + astgrep security rules |
+| Tool | Role | Lang | Architecture | Summary |
+|------|------|------|------|---------|
+| [**ogsql-parser**](https://github.com/c2j/ogsql-parser) | Foundation | Rust | [查看](docs/architecture/ogsql-parser/ogsql-parser-architecture.html) | Hand-written recursive descent SQL parser — 717 keywords, 180+ statement types, 1646 tests, full openGauss/GaussDB dialect coverage; 4-way benchmark vs sqlparser-rs/pglast/JSqlParser — 2.4–423× throughput, 100% GaussDB dialect success |
+| [**ogexplain-analyzer**](https://github.com/c2j/ogexplain-analyzer) | Diagnostics | Rust | [查看](docs/architecture/ogexplain-analyzer/ogexplain-analyzer-architecture.html) | EXPLAIN plan parser + 25 diagnostic rules with optimization suggestions, MCP Server mode; diagnostic accuracy benchmarked against the [`ogagila`](https://github.com/c2j/ogagila) sample DB (Precision/Recall/F1) |
+| [**metamorphosis**](https://github.com/c2j/metamorphosis) | Rewriting | Rust | [查看](docs/architecture/metamorphosis/metamorphosis-architecture.html) | SQL semantic rewriting engine with pluggable rule chain on AST |
+| [**codeweb**](https://github.com/c2j/codeweb) | Graph | Rust | [查看](docs/architecture/codeweb/codeweb-architecture.html) | Cross SQL + Java + MyBatis semantic call graph — full `Java Method → Mapper → SQL → Stored Procedure` chain tracing, MCP Server mode |
+| [**grep-excel**](https://github.com/c2j/grep-excel) | Data | Rust | [查看](docs/architecture/grep-excel/grep-excel-architecture.html) | DuckDB-powered Excel/CSV search engine with TUI + MCP Server mode |
+| [**WDRProbe**](https://github.com/c2j/WDRProbe) | Operations | Rust+TS | [查看](docs/architecture/WDRProbe/WDRProbe-architecture.html) | GaussDB WDR report desktop analysis tool |
+| [**flux-gauss**](https://github.com/c2j/flux-gauss) | Migration | Python | [查看](docs/architecture/flux-gauss/flux-gauss-architecture.html) | GaussDB stored procedure → Java + iBatis service auto-conversion, MCP Server mode |
+| [**SP-Complexity-Evaluator**](https://github.com/c2j/SP-Complexity-Evaluator) | Assessment | Java | [查看](docs/architecture/SP-Complexity-Evaluator/SP-Complexity-Evaluator-architecture.html) | SQL and stored procedure complexity scoring service with multi-dialect support |
+| [**rust-opengauss**](https://github.com/c2j/rust-opengauss) | Driver | Rust | [查看](docs/architecture/rust-opengauss/rust-opengauss-architecture.html) | Native GaussDB / openGauss Rust driver + MCP Server, zero FFI, SHA256/SM3 auth support |
+| [**hepta-dbcli**](https://github.com/c2j/hepta-dbcli) | Client | Rust | [查看](docs/architecture/hepta-dbcli/hepta-dbcli-architecture.html) | Multi-database CLI + MCP Server for MySQL/PolarDB-X/Oracle/GaussDB — one-shot execution, interactive REPL, OS keychain, read-only safety |
+| [**astgrep**](https://github.com/c2j/astgrep) | Security | Rust | [查看](docs/architecture/astgrep/astgrep-architecture.html) | Multi-language static code security analysis (SAST), Semgrep-style rules + taint analysis, GaussDB dialect via ogsql-parser |
+| [**CodeRoughcollie**](https://github.com/c2j/CodeRoughcollie) | Review | Rust | [查看](docs/architecture/CodeRoughcollie/CodeRoughcollie-architecture.html) | Static + dynamic hybrid code review — consumes ogexplain-analyzer's 28 diagnostic rules + real EXPLAIN + complexity scoring + astgrep security rules |
 
 ---
 
@@ -519,6 +530,17 @@ Each tool works independently while forming an organic whole through the shared 
 ```
 
 **ogsql-parser** is the foundation — ogexplain-analyzer, metamorphosis, codeweb, and astgrep all consume its AST output directly. **rust-opengauss** provides a native Rust driver and MCP Server, enabling AI assistants to connect directly to GaussDB/openGauss. **hepta-dbcli** is the multi-database client of the foundation layer (an "understructure" of Heptadecagon) — covering MySQL/PolarDB-X/Oracle/GaussDB with a unified CLI/REPL/MCP entry point for heterogeneous migration scenarios. **CodeRoughcollie** is the top integration layer — it consumes ogexplain-analyzer's 28 diagnostic rules, ogsql-complexity scoring, rust-opengauss's real EXPLAIN capability, and astgrep's security rules, unifying the entire ecosystem into a single code review workflow. **8 out of 12 tools now ship with built-in MCP Servers** (51 MCP tools total), giving AI assistants end-to-end coverage from parsing, diagnostics, rewriting, code graphing, migration, to security scanning. The other tools operate independently but share the same design philosophy: precision, high performance, and first-class GaussDB dialect support.
+
+
+### Architecture Diagrams
+
+All diagrams are generated with [archify](https://github.com/tt-a1i/archify) as self-contained interactive HTML (open directly in a browser; the sibling `.json` next to each file is the reproducible spec).
+
+| Scope | Diagram |
+|-------|---------|
+| Umbrella · high-level runtime architecture | [runtime-architecture.html](docs/architecture/runtime-architecture.html) |
+| 12 component internal architectures | see the "Architecture" column in the Tool Overview table above |
+
 
 ---
 

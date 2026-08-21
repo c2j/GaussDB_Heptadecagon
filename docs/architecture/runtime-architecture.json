@@ -1,0 +1,645 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "GaussDB Heptadecagon · 高层运行时架构",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1780,
+      1140
+    ],
+    "views": [
+      {
+        "id": "mcp-loop",
+        "label": "主路径 · 慢 SQL 优化闭环",
+        "focus": [
+          "ai",
+          "ogdriver",
+          "gaussdb",
+          "ogexplain",
+          "meta",
+          "ogsql"
+        ],
+        "note": "AI 助手经 MCP 编排工具链：EXPLAIN → 诊断 → 重写 → 等价性验证 → 格式化"
+      },
+      {
+        "id": "review-path",
+        "label": "CodeRoughcollie 审核路径",
+        "focus": [
+          "repos",
+          "coderc",
+          "ogexplain",
+          "ogdriver"
+        ],
+        "note": "静态诊断规则 + 真实 EXPLAIN 驱动的混合审核（影响分析与安全规则见卡片）"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "ai",
+      "type": "external",
+      "label": "AI 助手 / MCP 客户端",
+      "sublabel": "Claude · Cursor · Copilot",
+      "tag": "stdio JSON-RPC",
+      "pos": [
+        60,
+        90
+      ],
+      "size": [
+        190,
+        72
+      ]
+    },
+    {
+      "id": "repos",
+      "type": "external",
+      "label": "本地代码仓库",
+      "sublabel": "Java · MyBatis · SQL",
+      "pos": [
+        1330,
+        90
+      ],
+      "size": [
+        190,
+        72
+      ]
+    },
+    {
+      "id": "coderc",
+      "type": "backend",
+      "label": "CodeRoughcollie",
+      "sublabel": "coderc · 静态+动态审核",
+      "tag": "顶层集成",
+      "pos": [
+        900,
+        270
+      ],
+      "size": [
+        220,
+        80
+      ]
+    },
+    {
+      "id": "ogagila",
+      "type": "database",
+      "label": "ogagila 示例库",
+      "sublabel": "openGauss Pagila 基准",
+      "pos": [
+        620,
+        1040
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "ogdriver",
+      "type": "backend",
+      "label": "rust-opengauss",
+      "sublabel": "原生驱动 · MCP",
+      "pos": [
+        60,
+        870
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "ogexplain",
+      "type": "backend",
+      "label": "ogexplain-analyzer",
+      "sublabel": "28 条诊断规则",
+      "pos": [
+        340,
+        470
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "meta",
+      "type": "backend",
+      "label": "metamorphosis",
+      "sublabel": "SQL 语义重写",
+      "pos": [
+        620,
+        470
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "ogsql",
+      "type": "backend",
+      "label": "ogsql-parser",
+      "sublabel": "AST 基石 · 全方言",
+      "tag": "717 关键字",
+      "pos": [
+        620,
+        870
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "gexcel",
+      "type": "backend",
+      "label": "grep-excel",
+      "sublabel": "DuckDB 引擎",
+      "pos": [
+        340,
+        660
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "wdr",
+      "type": "frontend",
+      "label": "WDRProbe",
+      "sublabel": "Tauri 桌面 · CLI/TUI",
+      "pos": [
+        1345,
+        660
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "codeweb",
+      "type": "backend",
+      "label": "codeweb",
+      "sublabel": "语义调用图",
+      "pos": [
+        790,
+        660
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "astgrep",
+      "type": "security",
+      "label": "astgrep",
+      "sublabel": "SAST · 污点分析",
+      "tag": "安全",
+      "pos": [
+        975,
+        660
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "flux",
+      "type": "backend",
+      "label": "flux-gauss",
+      "sublabel": "存储过程 → Java",
+      "pos": [
+        1160,
+        660
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "speval",
+      "type": "backend",
+      "label": "SP-Complexity-Evaluator",
+      "sublabel": "复杂度评分 REST",
+      "pos": [
+        1530,
+        660
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "gaussdb",
+      "type": "database",
+      "label": "GaussDB / openGauss",
+      "sublabel": "EXPLAIN ANALYZE · WDR",
+      "pos": [
+        340,
+        1040
+      ],
+      "size": [
+        190,
+        68
+      ]
+    },
+    {
+      "id": "dbcli",
+      "type": "backend",
+      "label": "hepta-dbcli",
+      "sublabel": "多库 CLI · MCP",
+      "tag": "只读",
+      "pos": [
+        340,
+        870
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "odb",
+      "type": "database",
+      "label": "MySQL / PolarDB-X / Oracle",
+      "sublabel": "多库目标",
+      "pos": [
+        900,
+        1040
+      ],
+      "size": [
+        190,
+        68
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "应用层 · 顶层集成",
+      "wraps": [
+        "coderc"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "组件层 · 工具组件",
+      "wraps": [
+        "ogexplain",
+        "meta",
+        "codeweb",
+        "astgrep",
+        "flux",
+        "gexcel",
+        "wdr",
+        "speval"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "基础层 · 基石组件",
+      "wraps": [
+        "ogdriver",
+        "ogsql",
+        "dbcli"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from": "ai",
+      "to": "ogdriver",
+      "label": "MCP · EXPLAIN 请求",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "left",
+      "via": [
+        [
+          155,
+          250
+        ],
+        [
+          50,
+          250
+        ],
+        [
+          50,
+          902
+        ]
+      ],
+      "id": "c1"
+    },
+    {
+      "from": "ogdriver",
+      "to": "gaussdb",
+      "label": "EXPLAIN ANALYZE",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "via": [
+        [
+          145,
+          1010
+        ],
+        [
+          435,
+          1010
+        ]
+      ],
+      "id": "c2",
+      "labelAt": [
+        270,
+        1020
+      ]
+    },
+    {
+      "from": "ogdriver",
+      "to": "ogexplain",
+      "label": "执行计划 → 诊断",
+      "variant": "emphasis",
+      "fromSide": "top",
+      "toSide": "left",
+      "via": [
+        [
+          145,
+          400
+        ],
+        [
+          270,
+          400
+        ],
+        [
+          270,
+          502
+        ]
+      ],
+      "id": "c3"
+    },
+    {
+      "from": "ogexplain",
+      "to": "meta",
+      "label": "优化建议 → 重写",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left",
+      "id": "c4"
+    },
+    {
+      "from": "meta",
+      "to": "ogsql",
+      "label": "等价性验证 · 格式化",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "id": "c5",
+      "labelAt": [
+        705,
+        548
+      ]
+    },
+    {
+      "from": "ogsql",
+      "to": "codeweb",
+      "label": "AST",
+      "fromSide": "right",
+      "toSide": "bottom",
+      "id": "c6"
+    },
+    {
+      "from": "ogsql",
+      "to": "astgrep",
+      "label": "AST",
+      "fromSide": "right",
+      "toSide": "bottom",
+      "id": "c7"
+    },
+    {
+      "from": "ogsql",
+      "to": "flux",
+      "label": "AST",
+      "fromSide": "right",
+      "toSide": "bottom",
+      "id": "c8"
+    },
+    {
+      "from": "ogsql",
+      "to": "coderc",
+      "label": "AST · 语句切分",
+      "fromSide": "bottom",
+      "toSide": "bottom",
+      "via": [
+        [
+          705,
+          950
+        ],
+        [
+          1150,
+          950
+        ],
+        [
+          1150,
+          400
+        ],
+        [
+          1010,
+          400
+        ]
+      ],
+      "id": "c9",
+      "labelAt": [
+        930,
+        950
+      ]
+    },
+    {
+      "from": "ogexplain",
+      "to": "coderc",
+      "label": "28 条诊断规则",
+      "fromSide": "top",
+      "toSide": "left",
+      "via": [
+        [
+          425,
+          260
+        ],
+        [
+          230,
+          260
+        ],
+        [
+          230,
+          310
+        ]
+      ],
+      "id": "c10",
+      "labelAt": [
+        340,
+        230
+      ]
+    },
+    {
+      "from": "ogdriver",
+      "to": "coderc",
+      "label": "驱动 tokio-opengauss",
+      "fromSide": "right",
+      "toSide": "right",
+      "via": [
+        [
+          290,
+          902
+        ],
+        [
+          290,
+          380
+        ],
+        [
+          1130,
+          380
+        ],
+        [
+          1130,
+          310
+        ]
+      ],
+      "id": "c12",
+      "labelAt": [
+        600,
+        380
+      ]
+    },
+    {
+      "from": "repos",
+      "to": "coderc",
+      "label": "待审代码",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "via": [
+        [
+          1425,
+          250
+        ],
+        [
+          1010,
+          250
+        ]
+      ],
+      "id": "c15"
+    },
+    {
+      "from": "dbcli",
+      "to": "gaussdb",
+      "label": "只读 SQL / EXPLAIN",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "left",
+      "via": [
+        [
+          425,
+          990
+        ],
+        [
+          330,
+          990
+        ],
+        [
+          330,
+          1074
+        ]
+      ],
+      "id": "c17",
+      "labelAt": [
+        330,
+        960
+      ]
+    },
+    {
+      "from": "dbcli",
+      "to": "odb",
+      "label": "只读 SQL / EXPLAIN",
+      "variant": "security",
+      "fromSide": "right",
+      "toSide": "top",
+      "via": [
+        [
+          580,
+          902
+        ],
+        [
+          580,
+          1010
+        ],
+        [
+          995,
+          1010
+        ]
+      ],
+      "id": "c18",
+      "labelAt": [
+        590,
+        960
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "基石 · AST 依赖",
+      "items": [
+        "分层结构：基础层（ogsql-parser / rust-opengauss / hepta-dbcli）→ 组件层（8 个工具组件）→ 应用层（CodeRoughcollie 顶层集成）",
+        "ogsql-parser 是唯一基石：6 个工具直接消费其 AST（ogexplain / metamorphosis / codeweb / astgrep / flux-gauss / CodeRoughcollie）",
+        "AST 变更影响面最大——升级需 6 个下游同步；rust-opengauss 与 hepta-dbcli 为独立基石（驱动 / 客户端，不依赖 AST）",
+        "CodeRoughcollie 亦消费 metamorphosis 重写规则（cr-audit-static）与 ogsql-complexity 复杂度评分"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "MCP 生态 · 主路径",
+      "items": [
+        "9 个工具内置 MCP Server（≈55 个 MCP 工具），统一 rmcp + stdio JSON-RPC；astgrep 另有 Axum REST + 桌面 GUI",
+        "AI 助手可直连任意一个 MCP 工具，也可编排工具链",
+        "主路径 = 慢 SQL 优化闭环：EXPLAIN → 诊断 → 重写 → 等价性验证 → 格式化",
+        "CodeRoughcollie 的 cr-mcp-server 处于阶段三（未接线），另有新 cr-server (Axum REST)"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "信任边界",
+      "items": [
+        "边界 1：第三方 AI 客户端进程 ↔ 本地 MCP 服务器（stdio 半可信进程）",
+        "边界 2：本地工具 ↔ 远程数据库（TLS + 最小权限）",
+        "CodeRoughcollie 动态审核仅用 EXPLAIN 权限账号，cr-db 阻断 DML/DDL",
+        "hepta-dbcli 强制只读（SELECT/EXPLAIN/SHOW/DESCRIBE，自动 LIMIT）",
+        "密码存 OS 密钥链（hepta-dbcli / rust-opengauss）"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "外部依赖",
+      "items": [
+        "GaussDB / openGauss：EXPLAIN ANALYZE 与 WDR 报告来源",
+        "MySQL / PolarDB-X / Oracle：hepta-dbcli 多库目标",
+        "ogagila：openGauss Pagila 基准库 → ogexplain 诊断准确率 P/R/F1 评测",
+        "DuckDB（grep-excel 引擎）· tree-sitter（codeweb/astgrep）· z3（等价性验证）· Tauri（WDRProbe）",
+        "GitHub：12 个独立仓库，由本伞顶仓库 submodule 对齐"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "独立工具与计划中集成",
+      "items": [
+        "grep-excel / WDRProbe / SP-Complexity-Evaluator 无内部依赖，独立运行",
+        "WDRProbe：解析 GaussDB WDR HTML 报告（桌面 + CLI + TUI）",
+        "CodeRoughcollie 以子进程调用 astgrep（Java/SQL 安全规则，预设 + 正则回退）；codeweb 影响分析（--codeweb-analyze）为阶段三，失败自动降级",
+        "codeweb × astgrep sql-pattern-search（进程内集成）已设计未实现——tree-sitter 0.24/0.25 冲突阻断，备用方案为外部进程 / MCP 编排",
+        "codeweb / flux-gauss 直接扫描本地仓库源码（Java · XML · SQL · 存储过程）"
+      ]
+    }
+  ]
+}

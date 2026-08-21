@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "SP-Complexity-Evaluator · 内部架构",
+    "subtitle": "存储过程复杂度评估 REST 服务（Oracle / Gauss / Hive 多方言）",
+    "quality_profile": "showcase",
+    "viewBox": [1720, 920]
+  },
+  "components": [
+    { "id": "webui", "type": "frontend", "label": "Web 界面", "sublabel": "index.html / feedback-viewer", "tag": "静态页面", "pos": [90, 100], "size": [260, 70] },
+    { "id": "api-rest", "type": "backend", "label": "复杂度评估接口", "sublabel": "POST /api/complexity/*", "tag": "RESTful", "pos": [700, 100], "size": [320, 70] },
+    { "id": "api-feedback", "type": "backend", "label": "反馈接口", "sublabel": "GET / POST /api/feedback", "tag": "RESTful", "pos": [1300, 100], "size": [300, 70] },
+
+    { "id": "svc-eval", "type": "backend", "label": "评估服务", "sublabel": "ComplexityEvaluationServiceImpl", "tag": "方言注册表", "pos": [120, 330], "size": [280, 70] },
+    { "id": "svc-feedback", "type": "backend", "label": "反馈服务", "sublabel": "FeedbackServiceImpl", "tag": "ReadWriteLock", "pos": [1300, 330], "size": [300, 70] },
+    { "id": "parser-sql", "type": "backend", "label": "SQL 解析器", "sublabel": "Oracle / Gauss / Hive", "tag": "正则解析", "pos": [120, 480], "size": [280, 70] },
+    { "id": "parser-proc", "type": "backend", "label": "存储过程解析器", "sublabel": "过程 / 包体拆分", "tag": "StoredProcedureParser", "pos": [120, 600], "size": [280, 70] },
+    { "id": "evaluator", "type": "backend", "label": "复杂度评估器", "sublabel": "Oracle / Gauss / Hive", "tag": "分方言权重", "pos": [620, 480], "size": [300, 70] },
+    { "id": "models", "type": "backend", "label": "指标模型", "sublabel": "ComplexityMetrics 等", "tag": "Lombok DTO", "pos": [620, 600], "size": [300, 70] },
+    { "id": "exc-collector", "type": "backend", "label": "异常收集器", "sublabel": "SqlParserExceptionCollector", "tag": "ThreadLocal", "pos": [960, 600], "size": [240, 70] },
+    { "id": "util-excel", "type": "backend", "label": "Excel 导出工具", "sublabel": "ExcelExportUtil", "tag": "Apache POI", "pos": [1120, 480], "size": [280, 70] },
+
+    { "id": "springboot", "type": "external", "label": "Spring Boot 3.2", "sublabel": "Web / Validation 启动器", "tag": "Java 17", "pos": [480, 750], "size": [300, 70] },
+    { "id": "poi", "type": "external", "label": "Apache POI 5.2", "sublabel": "poi / poi-ooxml", "tag": "XSSF", "pos": [900, 750], "size": [280, 70] },
+    { "id": "commonsio", "type": "external", "label": "Apache Commons IO", "sublabel": "FileUtils 文件操作", "pos": [100, 750], "size": [280, 70] },
+    { "id": "fs", "type": "database", "label": "本地文件系统", "sublabel": "feedback.json / 附件", "tag": "~/.sp-complexity-evaluator", "pos": [1330, 750], "size": [300, 70] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "接口层 · REST API 与 Web 界面", "wraps": ["webui", "api-rest", "api-feedback"] },
+    { "kind": "region", "label": "核心层 · 解析 / 评估 / 导出", "wraps": ["svc-eval", "svc-feedback", "parser-sql", "parser-proc", "evaluator", "models", "exc-collector", "util-excel"] },
+    { "kind": "region", "label": "外部依赖 · 运行时与存储", "wraps": ["springboot", "poi", "commonsio", "fs"] }
+  ],
+  "connections": [
+    { "id": "webui-to-api-rest", "from": "webui", "to": "api-rest", "label": "提交 SQL / 存储过程", "variant": "emphasis", "fromSide": "right", "toSide": "left" },
+    { "id": "api-rest-to-svc-eval", "from": "api-rest", "to": "svc-eval", "label": "REST 评估请求", "variant": "emphasis", "fromSide": "bottom", "toSide": "top" },
+    { "id": "svc-eval-to-parser-sql", "from": "svc-eval", "to": "parser-sql", "label": "按方言解析 SQL", "labelAt": [260, 414], "variant": "emphasis", "fromSide": "bottom", "toSide": "top" },
+    { "id": "svc-eval-to-parser-proc", "from": "svc-eval", "to": "parser-proc", "label": "解析过程 / 包体", "variant": "emphasis", "fromSide": "left", "toSide": "top" },
+    { "id": "parser-sql-to-evaluator", "from": "parser-sql", "to": "evaluator", "label": "语句模型流转", "variant": "emphasis", "fromSide": "right", "toSide": "left" },
+    { "id": "parser-proc-to-evaluator", "from": "parser-proc", "to": "evaluator", "label": "过程对象流转", "variant": "emphasis", "fromSide": "right", "toSide": "left" },
+    { "id": "evaluator-to-models", "from": "evaluator", "to": "models", "label": "写入复杂度指标", "labelAt": [770, 564], "variant": "emphasis", "fromSide": "bottom", "toSide": "top" },
+    { "id": "evaluator-to-exc", "from": "evaluator", "to": "exc-collector", "label": "引用失败语句", "labelAt": [944, 564], "fromSide": "right", "toSide": "top" },
+    { "id": "api-feedback-to-svc-feedback", "from": "api-feedback", "to": "svc-feedback", "label": "反馈提交 / 查询", "labelAt": [1450, 184], "fromSide": "bottom", "toSide": "top" },
+    { "id": "svc-feedback-to-fs", "from": "svc-feedback", "to": "fs", "label": "持久化 JSON / 附件", "fromSide": "bottom", "toSide": "top" },
+    { "id": "api-rest-to-util-excel", "from": "api-rest", "to": "util-excel", "label": "批量结果导出", "fromSide": "bottom", "toSide": "top" },
+    { "id": "util-excel-to-poi", "from": "util-excel", "to": "poi", "label": "生成 .xlsx", "fromSide": "bottom", "toSide": "top" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "方言策略扩展", "items": ["Oracle / Gauss / Hive 各一套 SqlParser + StoredProcedureParser + ComplexityEvaluator，按方言注册分发", "Gauss 评估权重为整数档（10/15/20…），Oracle / Hive 为浮点权重", "新增方言：实现三个接口并在服务 init() 注册即可"] },
+    { "dot": "emerald", "title": "自定义权重因子", "items": ["自定义函数列表：命中调用额外加权（CUSTOM_FUNCTION_WEIGHT）", "高权重表：引用时整体分数按 10%/表 上浮", "高权重过程：嵌套调用额外计分（NESTED_PROCEDURE_WEIGHT）"] },
+    { "dot": "amber", "title": "批量与导出", "items": ["ZIP 批量上传：解压后逐文件评估，自动识别 SQL / 过程 / 包体", "多字符集回退：UTF-8 → ISO-8859-1 → GBK → GB2312", "Apache POI 生成 17 列 Excel 指标（含失败语句列表）"] },
+    { "dot": "rose", "title": "容错与反馈闭环", "items": ["ThreadLocal 异常收集器：单条失败不中断整体评估，失败语句随结果返回", "反馈提交持久化到 ~/.sp-complexity-evaluator（feedback.json + 附件文件）", "feedback-viewer 独立页面查看全部用户反馈"] },
+    { "dot": "violet", "title": "运行时与已知限制", "items": ["Spring Boot 3.2 / Java 17 / Lombok / Commons IO（ZIP 临时目录清理）", "解析器基于正则实现（JSqlParser 依赖已在 pom 中注释）", "已知限制：复杂 SQL 解析、大 ZIP 内存占用、高并发 ThreadLocal 泄漏风险"] }
+  ]
+}
