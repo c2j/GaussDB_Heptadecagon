@@ -1,0 +1,547 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "grep-excel · 内部架构",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1720,
+      880
+    ],
+    "views": [
+      {
+        "id": "main-path",
+        "label": "主路径 · 搜索与 SQL 管线",
+        "focus": [
+          "cli",
+          "mcp",
+          "engine-trait",
+          "engine-duckdb",
+          "engine-sqlite",
+          "engine-memory",
+          "ext-db",
+          "matcher",
+          "sql-gate"
+        ],
+        "note": "CLI/MCP 请求经 SearchEngine 抽象下发到 DuckDB（编译期首选）执行 SQL 或四种模式搜索；匹配器与只读 SQL 门禁挂在引擎侧；默认引擎降级链 DuckDB → SQLite → Memory"
+      },
+      {
+        "id": "import-path",
+        "label": "导入与解析管线",
+        "focus": [
+          "ext-files",
+          "ext-cloud",
+          "table-parsers",
+          "share-dl",
+          "importer",
+          "engine-trait",
+          "engine-duckdb"
+        ],
+        "note": "表格文件 / 云分享 URL → 解析与下载 → import_sheets 预解析表或引擎导入；Sheet 三态（Virtual → Materializing → Materialized）支撑懒加载"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "cli",
+      "type": "frontend",
+      "label": "CLI 命令行入口",
+      "sublabel": "clap 模式路由 · -q/-x/-i/--exec",
+      "tag": "接口",
+      "pos": [
+        80,
+        90
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "tui",
+      "type": "frontend",
+      "label": "TUI 终端界面",
+      "sublabel": "ratatui · 事件驱动浏览",
+      "tag": "接口",
+      "pos": [
+        380,
+        90
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "repl",
+      "type": "frontend",
+      "label": "SQL REPL 交互终端",
+      "sublabel": "rustyline · 点命令",
+      "tag": "接口",
+      "pos": [
+        680,
+        90
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "mcp",
+      "type": "backend",
+      "label": "MCP 服务器",
+      "sublabel": "rmcp stdio · 19 工具",
+      "tag": "接口",
+      "pos": [
+        980,
+        90
+      ],
+      "size": [
+        160,
+        64
+      ]
+    },
+    {
+      "id": "desktop",
+      "type": "frontend",
+      "label": "Desktop 桌面应用",
+      "sublabel": "Tauri v1 · React/Vite",
+      "tag": "接口",
+      "pos": [
+        1280,
+        90
+      ],
+      "size": [
+        180,
+        64
+      ]
+    },
+    {
+      "id": "engine-trait",
+      "type": "backend",
+      "label": "SearchEngine 抽象",
+      "sublabel": "统一接口 · DefaultEngine",
+      "tag": "核心",
+      "pos": [
+        360,
+        315
+      ],
+      "size": [
+        210,
+        80
+      ]
+    },
+    {
+      "id": "engine-duckdb",
+      "type": "database",
+      "label": "DuckDB 引擎",
+      "sublabel": "首选后端 · 窗口函数/百万行",
+      "tag": "引擎",
+      "pos": [
+        630,
+        323
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "engine-sqlite",
+      "type": "database",
+      "label": "SQLite 引擎",
+      "sublabel": "rusqlite bundled 备选",
+      "tag": "引擎",
+      "pos": [
+        860,
+        323
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "engine-memory",
+      "type": "database",
+      "label": "内存引擎",
+      "sublabel": "纯 Rust · 零依赖默认",
+      "tag": "引擎",
+      "pos": [
+        1080,
+        323
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "importer",
+      "type": "backend",
+      "label": "导入解析器",
+      "sublabel": "excel.rs 分发 · --repair 修复",
+      "tag": "核心",
+      "pos": [
+        80,
+        500
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "table-parsers",
+      "type": "backend",
+      "label": "表格解析器",
+      "sublabel": "HTML/文本/docx/pptx/XML/PDF/Parquet",
+      "tag": "核心",
+      "pos": [
+        320,
+        500
+      ],
+      "size": [
+        190,
+        64
+      ]
+    },
+    {
+      "id": "matcher",
+      "type": "backend",
+      "label": "搜索匹配器",
+      "sublabel": "全文/精确/通配/正则",
+      "tag": "助手",
+      "pos": [
+        560,
+        500
+      ],
+      "size": [
+        140,
+        64
+      ]
+    },
+    {
+      "id": "sql-gate",
+      "type": "security",
+      "label": "SQL 只读门禁",
+      "sublabel": "validate_sql 白名单",
+      "tag": "助手",
+      "pos": [
+        780,
+        500
+      ],
+      "size": [
+        140,
+        64
+      ]
+    },
+    {
+      "id": "share-dl",
+      "type": "backend",
+      "label": "云分享下载器",
+      "sublabel": "KDocs/WPS · reqwest",
+      "tag": "核心",
+      "pos": [
+        80,
+        590
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "ext-files",
+      "type": "external",
+      "label": "表格与文档文件",
+      "sublabel": "xlsx/csv/html/md/docx/pdf…",
+      "tag": "输入",
+      "pos": [
+        320,
+        720
+      ],
+      "size": [
+        190,
+        64
+      ]
+    },
+    {
+      "id": "ext-db",
+      "type": "external",
+      "label": "DuckDB / SQLite 运行库",
+      "sublabel": "嵌入式数据库",
+      "tag": "依赖",
+      "pos": [
+        630,
+        720
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "ext-cloud",
+      "type": "external",
+      "label": "云盘分享服务",
+      "sublabel": "kdocs.cn · WPS API",
+      "tag": "依赖",
+      "pos": [
+        80,
+        720
+      ],
+      "size": [
+        170,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "接口层",
+      "wraps": [
+        "cli",
+        "tui",
+        "repl",
+        "mcp",
+        "desktop"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "核心层 · 引擎与解析",
+      "wraps": [
+        "engine-trait",
+        "engine-duckdb",
+        "engine-sqlite",
+        "engine-memory",
+        "importer",
+        "table-parsers",
+        "matcher",
+        "sql-gate",
+        "share-dl"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "外部依赖",
+      "wraps": [
+        "ext-files",
+        "ext-db",
+        "ext-cloud"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "e1",
+      "from": "cli",
+      "to": "engine-trait",
+      "label": "搜索 / SQL 请求",
+      "variant": "emphasis",
+      "labelAt": [
+        240,
+        265
+      ],
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "e2",
+      "from": "engine-trait",
+      "to": "engine-duckdb",
+      "label": "SQL 执行与表导入",
+      "variant": "emphasis",
+      "labelAt": [
+        600,
+        409
+      ],
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "e3",
+      "from": "engine-duckdb",
+      "to": "ext-db",
+      "label": "嵌入式数据库访问",
+      "variant": "emphasis",
+      "labelAt": [
+        715,
+        470
+      ],
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "e4",
+      "from": "importer",
+      "to": "engine-trait",
+      "label": "import_sheets 预解析表",
+      "variant": "emphasis",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "e5",
+      "from": "table-parsers",
+      "to": "importer",
+      "label": "抽取表格数据",
+      "variant": "emphasis",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "e6",
+      "from": "ext-files",
+      "to": "table-parsers",
+      "label": "读取 Excel/CSV/文档",
+      "variant": "emphasis",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "e7",
+      "from": "mcp",
+      "to": "engine-trait",
+      "label": "19 个 MCP 工具",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "left"
+    },
+    {
+      "id": "e8",
+      "from": "tui",
+      "to": "engine-trait",
+      "label": "事件驱动查询",
+      "fromSide": "bottom",
+      "toSide": "left"
+    },
+    {
+      "id": "e9",
+      "from": "repl",
+      "to": "engine-trait",
+      "label": "SQL 执行",
+      "fromSide": "bottom",
+      "toSide": "left"
+    },
+    {
+      "id": "e10",
+      "from": "desktop",
+      "to": "engine-trait",
+      "label": "Tauri command 桥接",
+      "fromSide": "bottom",
+      "toSide": "left"
+    },
+    {
+      "id": "e11",
+      "from": "engine-duckdb",
+      "to": "engine-sqlite",
+      "label": "编译期降级备选",
+      "labelAt": [
+        830,
+        401
+      ],
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "e12",
+      "from": "engine-sqlite",
+      "to": "engine-memory",
+      "label": "编译期降级备选",
+      "labelAt": [
+        1045,
+        401
+      ],
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "e13",
+      "from": "engine-duckdb",
+      "to": "matcher",
+      "label": "匹配列定位",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "e14",
+      "from": "engine-duckdb",
+      "to": "sql-gate",
+      "label": "只读 SQL 校验",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "e15",
+      "from": "share-dl",
+      "to": "importer",
+      "label": "下载后解析导入",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "e16",
+      "from": "ext-cloud",
+      "to": "share-dl",
+      "label": "KDocs/WPS 下载 API",
+      "fromSide": "top",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "特性门控与引擎选择",
+      "items": [
+        "引擎编译期互斥：engine-memory / engine-duckdb / engine-sqlite；DefaultEngine 优先级 DuckDB > SQLite > Memory",
+        "features：full = memory + mcp-server + share-url + archive-support + pdf-support + parquet-support（仍无 DuckDB）",
+        "发布构建：--no-default-features --features file-dialog,engine-duckdb,mcp-server,share-url,pdf-support",
+        "可选依赖全门控：duckdb / rusqlite / pdfsink-rs / parquet / tar+flate2 / reqwest / rust_xlsxwriter / schemars"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "增量机制与懒加载",
+      "items": [
+        "Sheet 三态：Virtual（源文件 VIEW）→ Materializing（后台导入）→ Materialized（TABLE 全量）",
+        "register_virtual 只登记元数据，materialize 后台物化，经事件通道避免阻塞 TUI 线程",
+        "materialize_query 把只读 SQL 结果物化为会话临时表，drop_temp_table 回收，禁止删导入表",
+        "TUI 使用文件型 DuckDB（grep_excel_tui_{pid}.duckdb）支持并发物化；大文件懒加载计划见 docs/plans"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "搜索与 SQL 能力",
+      "items": [
+        "四种搜索模式：全文（大小写不敏感子串）/ 精确 / 通配（like_match）/ 正则（regex crate）",
+        "SQL 直查：SELECT/WITH/PIVOT/EXPLAIN 等；DuckDB 窗口函数与 :: 类型转换，SQLite LIKE/regexp()",
+        "validate_sql 只读门禁：拒绝 INSERT/UPDATE/DELETE/DDL/ATTACH/COPY 等多语句",
+        "--run 对每匹配行执行 shell 命令（${column} 模板展开），--run-output-column 回写结果列"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "接口与消费方",
+      "items": [
+        "五入口：CLI(-q/-x/-i/--exec/--run) · TUI(ratatui) · SQL REPL(rustyline 点命令) · MCP(19 工具) · Desktop(Tauri command)",
+        "压缩包支持：engine 导入时 detect_archive（ZIP/TAR 魔数）→ 提取条目 → 逐表解析（feature archive-support）",
+        "i18n 强制：全部用户可见文案走 i18n.rs（中/英），GBK 编码自动转码（encoding_rs + CJK 回退）",
+        "依赖方向 cli → core →（引擎/解析器），desktop → core，禁止反向；独立仓库，无 AST 依赖"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "计划与路线",
+      "items": [
+        "docs/plans 在研：PDF 解析优化 · 会话临时表 · 大文件懒加载 · openGauss dump 支持 · Tauri 桌面集成",
+        "CSV 优化：DuckDB register_virtual 并行 COUNT 与物化，避免逐行扫描（多 GB 文件）",
+        "格式注册表重构（format-registry-refactor）统一扩展名分发；--as 粘性格式覆盖",
+        "--repair：ZIP/XML 级别修复损坏 xlsx 后导入；Excel 日期双信号自动检测转 ISO-8601"
+      ]
+    }
+  ]
+}

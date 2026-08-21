@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "ogexplain-analyzer · 内部架构",
+    "quality_profile": "showcase",
+    "viewBox": [1720, 880]
+  },
+  "components": [
+    { "id": "tui", "type": "frontend", "label": "ogexplain TUI", "sublabel": "ratatui 树形视图 · 粘贴输入", "tag": "ogexplain-tui", "pos": [130, 150], "size": [180, 60] },
+    { "id": "cli", "type": "frontend", "label": "ogexplain CLI", "sublabel": "analyze / explain / optimize", "tag": "ogexplain", "pos": [400, 150], "size": [180, 60] },
+    { "id": "mcp", "type": "backend", "label": "ogexplain MCP Server", "sublabel": "5 个工具 · stdio 传输", "tag": "ogexplain-mcp", "pos": [670, 150], "size": [180, 60] },
+    { "id": "ai", "type": "external", "label": "AI 助手", "sublabel": "Claude / Cursor / VS Code", "tag": "MCP 客户端", "pos": [940, 20], "size": [190, 54] },
+    { "id": "core-parser", "type": "backend", "label": "EXPLAIN 解析器", "sublabel": "行分类 → 缩进树构建", "tag": "ogexplain-core", "pos": [130, 360], "size": [180, 60] },
+    { "id": "core-model", "type": "backend", "label": "计划模型", "sublabel": "PlanNode 树 · 80+ 节点", "tag": "ogexplain-core", "pos": [400, 360], "size": [180, 60] },
+    { "id": "core-analyzer", "type": "backend", "label": "诊断引擎", "sublabel": "25 条规则 · DFS 遍历", "tag": "ogexplain-core", "pos": [670, 360], "size": [180, 60] },
+    { "id": "core-suggester", "type": "backend", "label": "建议合成器", "sublabel": "跨规则综合优化建议", "tag": "ogexplain-core", "pos": [940, 360], "size": [180, 60] },
+    { "id": "ogsql-complexity", "type": "backend", "label": "SQL 复杂度评分", "sublabel": "标准 0-100 · GaussDB 4 维", "tag": "独立 crate", "pos": [130, 500], "size": [180, 60] },
+    { "id": "optimizer", "type": "backend", "label": "闭环优化器", "sublabel": "EXPLAIN→诊断→重写→验证→收敛", "tag": "ogexplain-optimizer", "pos": [400, 500], "size": [180, 64] },
+    { "id": "ogsql-parser", "type": "external", "label": "ogsql-parser", "sublabel": "GaussDB SQL AST · v0.8.31", "tag": "外部 crate", "pos": [130, 690], "size": [180, 60] },
+    { "id": "gaussdb", "type": "database", "label": "rust-opengauss", "sublabel": "gaussdb 驱动 · 可选 live", "tag": "外部 crate", "pos": [400, 690], "size": [180, 60] },
+    { "id": "metamorphosis", "type": "external", "label": "metamorphosis", "sublabel": "RewriteEngine + QED 证明", "tag": "外部 crate", "pos": [670, 690], "size": [180, 60] },
+    { "id": "z3", "type": "external", "label": "Z3 SMT 求解器", "sublabel": "等价性证明引擎", "tag": "内嵌依赖", "pos": [940, 690], "size": [150, 60] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "接口层", "wraps": ["tui", "cli", "mcp"] },
+    { "kind": "region", "label": "核心层", "wraps": ["core-parser", "core-model", "core-analyzer", "core-suggester", "ogsql-complexity", "optimizer"] },
+    { "kind": "region", "label": "外部依赖", "wraps": ["ogsql-parser", "gaussdb", "metamorphosis", "z3"] }
+  ],
+  "connections": [
+    { "from": "core-parser", "to": "core-model", "label": "构建计划树", "variant": "emphasis" },
+    { "from": "core-model", "to": "core-analyzer", "label": "逐节点诊断", "variant": "emphasis" },
+    { "from": "core-analyzer", "to": "core-suggester", "label": "发现 → 建议", "variant": "emphasis" },
+    { "from": "core-suggester", "to": "cli", "label": "诊断报告", "variant": "emphasis", "fromSide": "top", "toSide": "left" },
+    { "from": "core-suggester", "to": "mcp", "label": "结构化结果", "variant": "emphasis", "fromSide": "right", "toSide": "right" },
+    { "from": "mcp", "to": "ai", "label": "MCP 工具调用", "variant": "emphasis" },
+    { "from": "core-suggester", "to": "tui", "label": "树形视图", "fromSide": "top", "toSide": "bottom" },
+    { "from": "ogsql-parser", "to": "ogsql-complexity", "label": "AST 评分" },
+    { "from": "ogsql-parser", "to": "optimizer", "label": "AST 重写封装", "labelSegment": 1 },
+    { "from": "optimizer", "to": "gaussdb", "label": "EXPLAIN 执行", "labelAt": [490, 578] },
+    { "from": "optimizer", "to": "metamorphosis", "label": "重写 + 等价验证" },
+    { "from": "metamorphosis", "to": "z3", "label": "内嵌 Z3 求解" },
+    { "from": "ogsql-complexity", "to": "cli", "label": "复杂度评分", "fromSide": "left", "toSide": "top", "via": [[90, 530], [90, 100], [490, 100]] }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "闭环优化流程 (optimize)", "items": ["EXPLAIN → 诊断 → 映射 → 重写 → 验证 → 收敛 六步闭环", "CLI optimize 子命令驱动；ExplainExecutor 抽象注入数据库", "QED 内嵌 Z3 做等价性证明；VeriEQL 做有界检查", "max-iterations 默认 10，收敛由 MetricsSnapshot 判定"] },
+    { "dot": "emerald", "title": "增量机制与特性门控", "items": ["cargo features：cli / tui / mcp / db / live-db / full", "db 特性启用 gaussdb 驱动 → live EXPLAIN（explain 子命令）", "rust-i18n 中英双语，--lang 自动检测", "25/45+ 条规则按规则文件独立可测（insta 快照）"] },
+    { "dot": "violet", "title": "内部依赖与数据流", "items": ["ogexplain-core 为纯库：无 UI/IO 依赖，约束明确", "解析器两阶段：行分类（正则）→ 缩进树构建，永不 panic", "model 全部类型 derive Serialize，80+ NodeType 变体", "suggester 跨规则合成：多 spill→work_mem、扫描+连接→复合索引"] },
+    { "dot": "amber", "title": "外部依赖", "items": ["ogsql-parser v0.8.31：SQL AST 供 analyze_with_rewrite（SUBQ-006 改写检测）/ 复杂度 / optimizer 复用", "rust-opengauss（gaussdb 驱动）：可选 live EXPLAIN", "metamorphosis（固定 rev）：RewriteEngine + QED/VeriEQL 验证", "z3：通过 metamorphosis-qed 内嵌的 SMT 求解器"] },
+    { "dot": "rose", "title": "消费方与集成", "items": ["MCP 5 工具：analyze_explain / parse_explain / list_diagnostic_rules / get_suggestions / score_sql_complexity", "与 gaussdb-mcp 联动：gaussdb-mcp 执行 EXPLAIN → ogexplain-mcp 分析", "CodeRoughcollie 消费 ogexplain-core + ogsql-complexity", "ogagila 基准库提供 ground-truth EXPLAIN 用例 → P/R/F1 评估"] }
+  ]
+}

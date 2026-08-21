@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "CodeRoughcollie · 内部架构",
+    "subtitle": "GaussDB/openGauss 代码审核工具 — 静态 + 动态混合审核",
+    "quality_profile": "showcase",
+    "visual_preset": "blueprint",
+    "animation": "trace",
+    "viewBox": [2100, 1100],
+    "views": [
+      {
+        "id": "main-path",
+        "label": "混合审核主路径",
+        "focus": ["cr-cli", "cr-core", "cr-audit-static", "cr-audit-explain", "cr-db", "gaussdb", "cr-report"],
+        "note": "CLI 提交任务 → 引擎路由 → 静态规则 + 真实 EXPLAIN → 报告输出。"
+      },
+      {
+        "id": "static-ecosystem",
+        "label": "静态规则生态",
+        "focus": ["cr-audit-static", "ogexplain-core", "ogsql-parser", "metamorphosis-rules", "astgrep"],
+        "note": "AST 解析 + 28 条诊断规则 + 改写建议 + 子进程安全扫描。"
+      },
+      {
+        "id": "interfaces",
+        "label": "三种接入接口",
+        "focus": ["cr-cli", "cr-mcp-server", "cr-server"],
+        "note": "命令行 / MCP 工具 / HTTP API 与看板。"
+      }
+    ]
+  },
+  "components": [
+    { "id": "cr-cli", "type": "frontend", "label": "coderc CLI", "sublabel": "clap 入口 · 装配点", "tag": "命令行", "pos": [240, 90], "size": [200, 64] },
+    { "id": "cr-mcp-server", "type": "frontend", "label": "MCP Server", "sublabel": "rmcp stdio 工具", "tag": "工具协议", "pos": [980, 90], "size": [200, 64] },
+    { "id": "cr-server", "type": "frontend", "label": "HTTP API · 看板", "sublabel": "axum + SQLite", "tag": "REST", "pos": [1780, 90], "size": [200, 64] },
+    { "id": "cr-config", "type": "backend", "label": "配置与清单", "sublabel": ".roughcollie.toml / CSV", "tag": "cr-config", "pos": [240, 350], "size": [200, 58] },
+    { "id": "cr-core", "type": "backend", "label": "审核引擎核心", "sublabel": "路由 · 调度 · 基线", "tag": "cr-core · 零 IO", "pos": [560, 330], "size": [200, 58] },
+    { "id": "cr-db", "type": "backend", "label": "数据库访问层", "sublabel": "连接池 · EXPLAIN 执行", "tag": "cr-db", "pos": [1200, 490], "size": [200, 58] },
+    { "id": "cr-report", "type": "backend", "label": "报告渲染", "sublabel": "Markdown / JSON / SARIF", "tag": "cr-report", "pos": [1140, 330], "size": [200, 58] },
+    { "id": "cr-audit-static", "type": "backend", "label": "静态审核", "sublabel": "SQL 反模式 + Java 安全", "tag": "cr-audit-static", "pos": [160, 490], "size": [200, 58] },
+    { "id": "cr-audit-explain", "type": "backend", "label": "计划审核", "sublabel": "真实 EXPLAIN 分析", "tag": "cr-audit-explain", "pos": [880, 490], "size": [200, 58] },
+    { "id": "cr-audit-complexity", "type": "backend", "label": "复杂度评估", "sublabel": "ogsql-complexity 复用", "tag": "cr-audit-complexity", "pos": [1520, 490], "size": [200, 58] },
+    { "id": "cr-audit-impact", "type": "backend", "label": "影响分析", "sublabel": "codeweb 调用链", "tag": "cr-audit-impact", "pos": [1760, 490], "size": [200, 58] },
+    { "id": "ogsql-parser", "type": "external", "label": "ogsql-parser", "sublabel": "SQL AST 基础库", "tag": "生态子模块", "pos": [160, 780], "size": [200, 56] },
+    { "id": "ogexplain-core", "type": "external", "label": "ogexplain-core", "sublabel": "28 条诊断规则", "tag": "规则引擎", "pos": [600, 780], "size": [200, 56] },
+    { "id": "metamorphosis-rules", "type": "external", "label": "metamorphosis-rules", "sublabel": "SQL 改写规则", "tag": "生态子模块", "pos": [820, 780], "size": [200, 56] },
+    { "id": "astgrep", "type": "external", "label": "astgrep", "sublabel": "安全扫描子进程", "tag": "子进程", "pos": [1020, 700], "size": [200, 56] },
+    { "id": "ogsql-complexity", "type": "external", "label": "ogsql-complexity", "sublabel": "复杂度评分口径", "tag": "生态子模块", "pos": [1440, 780], "size": [200, 56] },
+    { "id": "codeweb", "type": "external", "label": "codeweb", "sublabel": "调用链分析子进程", "tag": "子进程", "pos": [1700, 780], "size": [200, 56] },
+    { "id": "gaussdb", "type": "database", "label": "GaussDB / openGauss", "sublabel": "tokio-opengauss", "tag": "真实执行计划", "pos": [1200, 800], "size": [200, 56] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "接口层 · Interface", "wraps": ["cr-cli", "cr-mcp-server", "cr-server"] },
+    { "kind": "region", "label": "核心层 · 审核引擎与审计维度", "wraps": ["cr-config", "cr-core", "cr-db", "cr-report", "cr-audit-static", "cr-audit-explain", "cr-audit-complexity", "cr-audit-impact"] },
+    { "kind": "region", "label": "外部依赖 · 解析器 / 规则库 / 子进程 / 数据库", "wraps": ["ogsql-parser", "ogexplain-core", "metamorphosis-rules", "astgrep", "ogsql-complexity", "codeweb", "gaussdb"] }
+  ],
+  "connections": [
+    { "from": "cr-cli", "to": "cr-core", "label": "提交审核任务", "variant": "emphasis", "fromSide": "right", "toSide": "left" },
+    { "from": "cr-cli", "to": "cr-config", "label": "读取配置", "labelAt": [340, 168] },
+    { "from": "cr-cli", "to": "cr-report", "label": "渲染报告", "variant": "emphasis" },
+    { "from": "cr-mcp-server", "to": "cr-report", "label": "JSON 输出", "fromSide": "right", "toSide": "top" },
+    { "from": "cr-server", "to": "cr-report", "label": "报告输出", "fromSide": "left", "toSide": "right" },
+    { "from": "cr-config", "to": "cr-core", "label": "规则配置快照", "labelAt": [500, 390] },
+    { "from": "cr-core", "to": "cr-audit-static", "label": "路由静态审核", "variant": "emphasis", "fromSide": "bottom", "toSide": "top" },
+    { "from": "cr-core", "to": "cr-audit-explain", "label": "调度计划审核", "variant": "emphasis", "fromSide": "right", "toSide": "top" },
+    { "from": "cr-core", "to": "cr-audit-complexity", "label": "复杂度评估", "fromSide": "right", "toSide": "top" },
+    { "from": "cr-core", "to": "cr-audit-impact", "label": "影响分析调度", "fromSide": "bottom", "toSide": "top" },
+    { "from": "cr-audit-explain", "to": "cr-db", "label": "获取执行计划" },
+    { "from": "cr-db", "to": "gaussdb", "label": "EXPLAIN ANALYZE", "variant": "emphasis", "fromSide": "bottom", "toSide": "top", "labelAt": [1300, 700] },
+    { "from": "cr-audit-static", "to": "ogexplain-core", "label": "28 条规则诊断", "variant": "emphasis", "fromSide": "bottom", "toSide": "top" },
+    { "from": "cr-audit-static", "to": "ogsql-parser", "label": "AST 解析", "fromSide": "bottom", "toSide": "top", "labelAt": [230, 706] },
+    { "from": "cr-audit-static", "to": "metamorphosis-rules", "label": "改写建议", "fromSide": "bottom", "toSide": "top" },
+    { "from": "cr-audit-static", "to": "astgrep", "label": "安全扫描子进程", "fromSide": "bottom", "toSide": "top" },
+    { "from": "cr-audit-complexity", "to": "ogsql-complexity", "label": "评分口径复用", "fromSide": "bottom", "toSide": "top" },
+    { "from": "cr-audit-impact", "to": "codeweb", "label": "调用链查询", "fromSide": "bottom", "toSide": "top" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "增量机制", "items": ["cr-git：--baseline 分支 diff 提取变更文件，只审变更", "行级 diff-aware 过滤：仅保留落在新增/变更行内的 finding", "CSV 清单批量模式：自动 fetch + checkout + pull --ff-only 后逐仓审核"] },
+    { "dot": "amber", "title": "特性门控与降级", "items": ["embed-astgrep feature：release 构建内嵌 astgrep 二进制与规则资源", "--no-db 强制纯静态；数据库不可用时自动降级静态分析", "MySQL 后端二期（EXPLAIN FORMAT=JSON），当前仅 GaussDB / PostgreSQL"] },
+    { "dot": "violet", "title": "内部依赖约束", "items": ["单向依赖：所有 cr-* ─► cr-core，cr-core 零外部 IO（M-ARCH-02）", "cr-plugin（libloading C ABI + 沙箱）独立于审计 crate，三期接入", "cr-server：axum + SQLite AuditStore，保存历史审核记录与趋势"] },
+    { "dot": "emerald", "title": "消费方与门禁", "items": ["CI 门禁：Critical 严重度映射退出码 1 阻断合并", "MCP 工具：audit_sql / list_rules / audit_files / suggest_fix", "HTTP：/api/audit、/api/health、/dashboard 看板"] },
+    { "dot": "rose", "title": "接口直连与扩展计划", "items": ["MCP 工具 audit_sql / audit_files 直接复用 cr-audit-static，JSON 结果经 cr-report 输出（图中经引擎统一装配示意）", "cr-audit-explain 复用 ogexplain-core 解析执行计划算子", "影响分析：codeweb analyze 建图后自动触发调用链查询（--codeweb-analyze）"] }
+  ]
+}

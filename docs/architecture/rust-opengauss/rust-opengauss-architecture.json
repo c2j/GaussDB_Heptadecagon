@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "rust-opengauss · 内部架构",
+    "subtitle": "openGauss 原生驱动（gaussdb / tokio-opengauss）+ gaussdb-mcp 服务器",
+    "quality_profile": "showcase",
+    "animation": "trace",
+    "visual_preset": "classic",
+    "viewBox": [1740, 940]
+  },
+  "components": [
+    { "id": "ai-client", "type": "frontend", "label": "AI 客户端", "sublabel": "Claude Desktop · Cursor", "tag": "MCP stdio", "pos": [80, 100], "size": [200, 64] },
+    { "id": "mcp-server", "type": "backend", "label": "gaussdb-mcp 服务端", "sublabel": "MCP Server · 6 工具", "tag": "rmcp 1.5", "pos": [430, 100], "size": [230, 64] },
+    { "id": "cli-repl", "type": "frontend", "label": "gaussdb CLI / REPL", "sublabel": "clap · rustyline", "tag": "交互式", "pos": [820, 100], "size": [200, 64] },
+    { "id": "mcp-queries", "type": "backend", "label": "元数据查询集", "sublabel": "pg_catalog SQL 模板", "tag": "只读", "pos": [80, 350], "size": [210, 60] },
+    { "id": "mcp-config", "type": "backend", "label": "连接配置管理", "sublabel": "多连接 · 超时 · 密钥环", "tag": "TOML", "pos": [380, 350], "size": [210, 60] },
+    { "id": "gaussdb", "type": "backend", "label": "gaussdb 统一入口", "sublabel": "异步 + 同步门面", "tag": "0.1.0", "pos": [700, 350], "size": [250, 70] },
+    { "id": "tls-native", "type": "security", "label": "native-tls 连接器", "sublabel": "feature 门控", "tag": "native-tls", "pos": [1100, 350], "size": [190, 58] },
+    { "id": "opengauss-types", "type": "backend", "label": "opengauss-types", "sublabel": "OID / 类型映射", "tag": "19 适配器", "pos": [80, 560], "size": [200, 60] },
+    { "id": "opengauss-protocol", "type": "backend", "label": "opengauss-protocol", "sublabel": "线协议 · 认证 · 消息", "tag": "3.51", "pos": [380, 560], "size": [210, 64] },
+    { "id": "tokio-opengauss", "type": "backend", "label": "tokio-opengauss", "sublabel": "异步连接 / 查询管线", "tag": "0.7.17", "pos": [700, 560], "size": [250, 64] },
+    { "id": "opengauss", "type": "backend", "label": "opengauss (同步)", "sublabel": "内部 Runtime 包装", "tag": "0.19.13", "pos": [1050, 560], "size": [210, 62] },
+    { "id": "tls-openssl", "type": "security", "label": "openssl 连接器", "sublabel": "feature 门控", "tag": "openssl", "pos": [1450, 560], "size": [190, 58] },
+    { "id": "gaussdb-server", "type": "database", "label": "GaussDB / openGauss", "sublabel": "协议 3.51 服务端", "tag": "SHA256 · SCRAM", "pos": [365, 780], "size": [240, 70] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "接口层", "wraps": ["ai-client", "mcp-server", "cli-repl"] },
+    { "kind": "region", "label": "核心驱动层", "wraps": ["mcp-queries", "mcp-config", "gaussdb", "tls-native", "opengauss-types", "opengauss-protocol", "tokio-opengauss", "opengauss", "tls-openssl"] },
+    { "kind": "region", "label": "外部依赖", "wraps": ["gaussdb-server"] }
+  ],
+  "connections": [
+    { "from": "ai-client", "to": "mcp-server", "label": "MCP 请求 (stdio)", "variant": "emphasis" },
+    { "from": "mcp-server", "to": "gaussdb", "label": "工具调用 · SQL 执行", "variant": "emphasis", "fromSide": "bottom", "toSide": "top" },
+    { "from": "gaussdb", "to": "tokio-opengauss", "label": "异步连接管线", "variant": "emphasis", "labelSegment": 3 },
+    { "from": "tokio-opengauss", "to": "opengauss-protocol", "label": "消息编解码 · 认证", "variant": "emphasis" },
+    { "from": "opengauss-protocol", "to": "gaussdb-server", "label": "协议 3.51 · 线协议", "variant": "emphasis", "fromSide": "bottom", "toSide": "top", "labelDy": 24 },
+    { "from": "cli-repl", "to": "gaussdb", "label": "SQL 执行 · 表格/CSV", "fromSide": "bottom", "toSide": "top" },
+    { "from": "mcp-server", "to": "mcp-config", "label": "连接名解析 · 超时", "fromSide": "bottom", "toSide": "top", "labelSegment": 2 },
+    { "from": "mcp-server", "to": "mcp-queries", "label": "元数据 SQL 模板", "fromSide": "bottom", "toSide": "top" },
+    { "from": "mcp-config", "to": "gaussdb", "label": "连接配置 · 密钥环" },
+    { "from": "opengauss", "to": "tokio-opengauss", "label": "同步包装" },
+    { "from": "tokio-opengauss", "to": "opengauss-types", "label": "值转换 (ToSql/FromSql)", "fromSide": "top", "toSide": "top" },
+    { "from": "gaussdb", "to": "tls-native", "label": "TLS 连接器 · native-tls" },
+    { "from": "gaussdb", "to": "tls-openssl", "label": "TLS 连接器 · openssl", "fromSide": "bottom", "toSide": "top" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "认证与协议 (零 FFI)", "items": ["openGauss SHA256 认证：嵌套 plain/md5/sha256 子匹配", "PBKDF2-SHA1 → HMAC-SHA256 → XOR proof 纯 Rust 实现", "SCRAM-SHA-256 / SASL 回退 + MD5；启动报文 3.51 区分认证码", "前端/后端消息编解码：长度前缀 + 大端字节序"] },
+    { "dot": "violet", "title": "同步 + 异步双 API", "items": ["gaussdb 根命名空间 = 异步便捷别名（默认）", "sync feature 门控 opengauss：内部 Tokio Runtime 阻塞调用", "同步/异步类型同名不同型，禁用 glob 混导避免遮蔽", "opengauss-derive 透传 #[derive(ToSql, FromSql)]"] },
+    { "dot": "emerald", "title": "MCP 工具与配置", "items": ["6 工具：数据库信息 / 表清单 / 表详情 / 只读查询 / 执行计划 / 连接列表", "多命名连接 TOML + 向后兼容单连接格式", "密码密钥环 (keyring) 与 sentinel 自动迁移", "statement_timeout 与连接生命周期；SQLSTATE→SQLCODE 映射"] },
+    { "dot": "amber", "title": "特性门控与内部依赖", "items": ["gaussdb features 全 dep: 可选依赖（WASM 安全）", "~19 个类型适配器：chrono / uuid / serde_json / rust_decimal / geo…", "TLS 命名空间隔离：tls-native-tls / tls-openssl 互不撞名", "opengauss-types 依赖 protocol 的 OID 基元；integration 测试闸门"] },
+    { "dot": "slate", "title": "外部依赖与消费方", "items": ["外部仅 GaussDB / openGauss 服务器（协议 3.51）", "异步运行时 tokio；TLS 后端 native-tls 或 openssl（可选）", "下游：ogexplain-analyzer 用驱动做 live EXPLAIN", "计划文档 docs/plans/：SHA256 认证、多连接支持"] }
+  ]
+}

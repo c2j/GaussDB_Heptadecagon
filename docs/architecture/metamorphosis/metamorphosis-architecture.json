@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "metamorphosis · 内部架构",
+    "quality_profile": "showcase",
+    "viewBox": [1760, 920],
+    "views": [
+      {
+        "id": "main-path",
+        "label": "重写主路径",
+        "focus": ["cli", "rewrite-engine", "rule-registry", "rules", "ogsql-parser"],
+        "note": "从 CLI/MCP 请求到规则链执行、输出格式化与重解析校验。"
+      },
+      {
+        "id": "verify-path",
+        "label": "验证与外部依赖",
+        "focus": ["qed", "verieql", "z3", "ogsql-parser"],
+        "note": "QED / VeriEQL 双验证引擎与 z3 求解器、ogsql-parser 基础设施。"
+      }
+    ]
+  },
+  "components": [
+    { "id": "cli", "type": "backend", "label": "CLI 命令行", "sublabel": "rewrite · suggest · verify · inline · mcp", "tag": "6 子命令", "pos": [110, 100], "size": [280, 88] },
+    { "id": "mcp-server", "type": "backend", "label": "MCP Server", "sublabel": "stdio · rmcp · 6 工具", "tag": "AI 助手集成", "pos": [1130, 100], "size": [280, 88] },
+    { "id": "rules", "type": "backend", "label": "内置规则集 (14)", "sublabel": "语义 / 性能 / 安全 / 数据质量", "tag": "Safe · Conditional · Manual", "pos": [90, 345], "size": [280, 92] },
+    { "id": "rule-registry", "type": "backend", "label": "规则注册表", "sublabel": "过滤 · 优先级 · 循环防止", "pos": [480, 345], "size": [260, 92] },
+    { "id": "rewrite-engine", "type": "backend", "label": "重写引擎", "sublabel": "匹配 → 改写 / 建议收集", "pos": [850, 345], "size": [280, 92] },
+    { "id": "qed", "type": "security", "label": "QED 等价性证明", "sublabel": "AST → 关系代数 → SMT 公式", "pos": [1170, 345], "size": [250, 92] },
+    { "id": "rewrite-context", "type": "backend", "label": "重写上下文", "sublabel": "SchemaMap · 配置 · 版本门控", "pos": [110, 530], "size": [260, 92] },
+    { "id": "schema-extractor", "type": "backend", "label": "Schema 抽取器", "sublabel": "DDL 目录 → SchemaMap", "pos": [460, 530], "size": [260, 92] },
+    { "id": "inline", "type": "backend", "label": "参数内联", "sublabel": "占位符 → 字面量 · 类型推断", "pos": [750, 530], "size": [240, 92] },
+    { "id": "verieql", "type": "security", "label": "VeriEQL 有界验证", "sublabel": "OOPSLA'24 移植 · 反例查找", "pos": [1450, 530], "size": [250, 92] },
+    { "id": "ogsql-parser", "type": "external", "label": "ogsql-parser", "sublabel": "AST · Visitor · Formatter", "tag": "v0.8.31", "pos": [360, 755], "size": [300, 100] },
+    { "id": "z3", "type": "external", "label": "Z3 SMT 求解器", "sublabel": "vendored · 静态链接", "pos": [1230, 755], "size": [390, 100] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "接口层", "wraps": ["cli", "mcp-server"] },
+    { "kind": "region", "label": "核心层", "wraps": ["rules", "rule-registry", "rewrite-engine", "qed", "rewrite-context", "schema-extractor", "inline", "verieql"] },
+    { "kind": "region", "label": "外部依赖", "wraps": ["ogsql-parser", "z3"] }
+  ],
+  "connections": [
+    { "id": "cli-to-engine", "from": "cli", "to": "rewrite-engine", "label": "rewrite / suggest 请求 (AST + Schema)", "variant": "emphasis", "fromSide": "bottom", "toSide": "top", "via": [[250, 300], [990, 300]] },
+    { "id": "rules-to-registry", "from": "rules", "to": "rule-registry", "label": "注册内置规则", "variant": "emphasis" },
+    { "id": "registry-to-engine", "from": "rule-registry", "to": "rewrite-engine", "label": "返回过滤规则", "variant": "emphasis" },
+    { "id": "engine-to-parser", "from": "rewrite-engine", "to": "ogsql-parser", "label": "格式化 + 重解析校验", "labelAt": [780, 660], "variant": "emphasis", "fromSide": "bottom", "toSide": "top", "via": [[990, 470], [1050, 470], [1050, 660], [510, 660]] },
+    { "id": "cli-to-qed", "from": "cli", "to": "qed", "label": "verify 请求 (原 / 改写 SQL)", "variant": "emphasis", "fromSide": "bottom", "toSide": "top" },
+    { "id": "qed-to-z3", "from": "qed", "to": "z3", "label": "SMT 可满足性求解", "variant": "emphasis", "fromSide": "bottom", "toSide": "right", "via": [[1295, 470], [1720, 470], [1720, 805]] },
+    { "id": "mcp-to-qed", "from": "mcp-server", "to": "qed", "label": "verify_equivalence 工具", "fromSide": "right", "toSide": "right", "via": [[1500, 144], [1500, 250], [1430, 250], [1430, 391]] },
+    { "id": "context-to-engine", "from": "rewrite-context", "to": "rewrite-engine", "label": "Schema · 配置注入", "labelAt": [693, 451], "fromSide": "top", "toSide": "right", "via": [[240, 450], [1145, 450], [1145, 391]] },
+    { "id": "extractor-to-context", "from": "schema-extractor", "to": "rewrite-context", "label": "SchemaMap", "fromSide": "left", "toSide": "right" },
+    { "id": "parser-to-verieql", "from": "ogsql-parser", "to": "verieql", "label": "SQL → 有界模型编码", "fromSide": "top", "toSide": "bottom" },
+    { "id": "verieql-to-z3", "from": "verieql", "to": "z3", "label": "BMC 反例查找", "fromSide": "bottom", "toSide": "top", "via": [[1575, 720], [1425, 720]] }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "双验证引擎", "items": ["QED：AST → 关系代数 → SMT 公式，离线证明语义等价", "VeriEQL：OOPSLA'24 有界模型检查，限定表大小快速找反例", "CLI verify --engine 与 MCP verify_equivalence 均可切换"] },
+    { "dot": "emerald", "title": "规则与安全级别", "items": ["14 条内置规则：语义改写 / 性能优化 / 安全告警 / 数据质量探针", "Safe 自动执行 · Conditional 条件执行 · Manual 仅生成建议", "输出携带 High / Medium / Low 置信度"] },
+    { "dot": "amber", "title": "接口与工具", "items": ["库 API：metamorphosis-core 导出引擎 / 注册表 / 类型", "CLI 6 子命令：rewrite · suggest · show-rules · verify · inline · mcp", "MCP 6 工具：rewrite_sql / suggest_probes 调用重写引擎，verify_equivalence 调用双验证引擎，extract_schema / inline_sql / list_rules 辅助"] },
+    { "dot": "rose", "title": "特性门控与联动", "items": ["版本门控规则（RewriteContext.version）与规则启停配置", "MyBatis / 存储过程（PL/pgSQL 变量）输入支持", "可注入 og explain-analyzer 的 diagnostic_hints 增强匹配"] },
+    { "dot": "violet", "title": "增量机制与消费方", "items": ["重写循环防止 + 重解析校验，避免语义漂移", "Manual 规则生成探针 SQL（LIMIT 可配）而非改写原 SQL", "消费方：CodeRoughcollie / ogexplain-analyzer；演进见 docs/plans"] }
+  ]
+}

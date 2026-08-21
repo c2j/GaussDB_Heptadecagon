@@ -1,0 +1,479 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "astgrep · 内部架构",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1720,
+      920
+    ],
+    "views": [
+      {
+        "id": "analyze-path",
+        "label": "分析主路径",
+        "focus": [
+          "cli",
+          "rules",
+          "matcher",
+          "dataflow",
+          "parser",
+          "tree-sitter"
+        ],
+        "note": "从 CLI analyze 出发：解析 → 模式/污点匹配 → 规则引擎产出发现。"
+      },
+      {
+        "id": "sql-dialects",
+        "label": "SQL 方言分发",
+        "focus": [
+          "parser",
+          "tree-sitter",
+          "ogsql",
+          "sqlparser",
+          "embedded-sql"
+        ],
+        "note": "GaussDB/OpenGauss → ogsql-parser；PolarDB-MySQL → sqlparser-rs。"
+      },
+      {
+        "id": "interfaces",
+        "label": "四大接口",
+        "focus": [
+          "cli",
+          "web",
+          "gui",
+          "mcp"
+        ],
+        "note": "CLI 为主入口，Axum REST、egui GUI、MCP stdio 服务并列为次要接口。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "cli",
+      "type": "backend",
+      "label": "astgrep CLI",
+      "sublabel": "14 命令 · 6 种输出",
+      "tag": "主入口",
+      "pos": [
+        280,
+        70
+      ],
+      "size": [
+        190,
+        64
+      ]
+    },
+    {
+      "id": "web",
+      "type": "backend",
+      "label": "REST API",
+      "sublabel": "Axum :8080 · /api/v1",
+      "tag": "Web Playground",
+      "pos": [
+        520,
+        70
+      ],
+      "size": [
+        190,
+        64
+      ]
+    },
+    {
+      "id": "gui",
+      "type": "frontend",
+      "label": "桌面 GUI",
+      "sublabel": "egui · 跨平台",
+      "tag": "交互式 Playground",
+      "pos": [
+        760,
+        70
+      ],
+      "size": [
+        190,
+        64
+      ]
+    },
+    {
+      "id": "mcp",
+      "type": "backend",
+      "label": "MCP Server",
+      "sublabel": "rmcp · stdio",
+      "tag": "4 工具",
+      "pos": [
+        1000,
+        70
+      ],
+      "size": [
+        190,
+        64
+      ]
+    },
+    {
+      "id": "embedded-sql",
+      "type": "backend",
+      "label": "嵌入式 SQL 预处理",
+      "sublabel": "Java 注解 / MyBatis XML",
+      "tag": "抽取 SQL 片段",
+      "pos": [
+        1240,
+        70
+      ],
+      "size": [
+        200,
+        64
+      ]
+    },
+    {
+      "id": "core",
+      "type": "backend",
+      "label": "astgrep-core",
+      "sublabel": "类型 · 配置 · 错误",
+      "tag": "Language 枚举",
+      "pos": [
+        280,
+        330
+      ],
+      "size": [
+        150,
+        70
+      ]
+    },
+    {
+      "id": "rules",
+      "type": "backend",
+      "label": "astgrep-rules",
+      "sublabel": "解析 · 校验 · 执行",
+      "tag": "YAML 驱动",
+      "pos": [
+        880,
+        330
+      ],
+      "size": [
+        230,
+        78
+      ]
+    },
+    {
+      "id": "ast",
+      "type": "backend",
+      "label": "astgrep-ast",
+      "sublabel": "UniversalNode · Visitor",
+      "tag": "通用 AST",
+      "pos": [
+        280,
+        470
+      ],
+      "size": [
+        190,
+        72
+      ]
+    },
+    {
+      "id": "matcher",
+      "type": "backend",
+      "label": "astgrep-matcher",
+      "sublabel": "模式 · 元变量 · 条件",
+      "tag": "精确匹配",
+      "pos": [
+        600,
+        470
+      ],
+      "size": [
+        190,
+        72
+      ]
+    },
+    {
+      "id": "dataflow",
+      "type": "security",
+      "label": "astgrep-dataflow",
+      "sublabel": "污点 · 调用图 · 常量",
+      "tag": "Source→Sink",
+      "pos": [
+        1160,
+        470
+      ],
+      "size": [
+        190,
+        72
+      ]
+    },
+    {
+      "id": "parser",
+      "type": "backend",
+      "label": "astgrep-parser",
+      "sublabel": "tree-sitter + 方言适配器",
+      "tag": "方言分发",
+      "pos": [
+        280,
+        600
+      ],
+      "size": [
+        190,
+        72
+      ]
+    },
+    {
+      "id": "sqlparser",
+      "type": "external",
+      "label": "sqlparser-rs",
+      "sublabel": "PolarDB-MySQL 方言",
+      "tag": "0.62",
+      "pos": [
+        280,
+        800
+      ],
+      "size": [
+        190,
+        64
+      ]
+    },
+    {
+      "id": "ogsql",
+      "type": "external",
+      "label": "ogsql-parser",
+      "sublabel": "GaussDB / OpenGauss 方言",
+      "tag": "v0.8.31",
+      "pos": [
+        520,
+        800
+      ],
+      "size": [
+        190,
+        64
+      ]
+    },
+    {
+      "id": "tree-sitter",
+      "type": "external",
+      "label": "tree-sitter 0.25",
+      "sublabel": "Java/JS/Python/Bash/XML/Sequel",
+      "tag": "多语言语法",
+      "pos": [
+        760,
+        800
+      ],
+      "size": [
+        190,
+        64
+      ]
+    },
+    {
+      "id": "rules-lib",
+      "type": "database",
+      "label": "YAML 规则库",
+      "sublabel": "内置 + 用户规则",
+      "tag": "方言感知",
+      "pos": [
+        960,
+        800
+      ],
+      "size": [
+        230,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "接口层 · 对外界面",
+      "wraps": [
+        "cli",
+        "web",
+        "gui",
+        "mcp",
+        "embedded-sql"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "核心分析层 · 引擎",
+      "wraps": [
+        "core",
+        "rules",
+        "ast",
+        "matcher",
+        "dataflow",
+        "parser"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "外部依赖层 · 解析器与数据",
+      "wraps": [
+        "sqlparser",
+        "ogsql",
+        "tree-sitter",
+        "rules-lib"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "cli-rules",
+      "from": "cli",
+      "to": "rules",
+      "label": "执行 analyze",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "web-rules",
+      "from": "web",
+      "to": "rules",
+      "label": "REST 分析请求",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "gui-rules",
+      "from": "gui",
+      "to": "rules",
+      "label": "交互式分析",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "mcp-rules",
+      "from": "mcp",
+      "to": "rules",
+      "label": "analyze_code 工具",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "emb-rules",
+      "from": "embedded-sql",
+      "to": "rules",
+      "label": "SQL 片段规则匹配",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "rules-matcher",
+      "from": "rules",
+      "to": "matcher",
+      "label": "元变量模式匹配",
+      "variant": "emphasis"
+    },
+    {
+      "id": "rules-dataflow",
+      "from": "rules",
+      "to": "dataflow",
+      "label": "污点 Source→Sink",
+      "variant": "emphasis"
+    },
+    {
+      "id": "ast-matcher",
+      "from": "ast",
+      "to": "matcher",
+      "label": "提供 AST",
+      "variant": "emphasis"
+    },
+    {
+      "id": "parser-ast",
+      "from": "parser",
+      "to": "ast",
+      "label": "产出 UniversalNode",
+      "variant": "emphasis",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "core-ast",
+      "from": "core",
+      "to": "ast",
+      "label": "基础类型 · 配置",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "parser-tree",
+      "from": "parser",
+      "to": "tree-sitter",
+      "label": "多语言语法解析",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "parser-ogsql",
+      "from": "parser",
+      "to": "ogsql",
+      "label": "GaussDB / OpenGauss",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "parser-sqlparser",
+      "from": "parser",
+      "to": "sqlparser",
+      "label": "PolarDB-MySQL",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        375,
+        770
+      ]
+    },
+    {
+      "id": "rules-lib",
+      "from": "rules",
+      "to": "rules-lib",
+      "label": "加载 YAML 规则",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "SQL 方言分发",
+      "items": [
+        "GaussDB/OpenGauss → ogsql-parser（git tag 锁定 v0.8.31）",
+        "PolarDB-MySQL → sqlparser-rs 0.62（MySqlDialect）",
+        "标准 SQL → tree-sitter-sequel 0.3.11；--dialect 一键切换"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "污点分析",
+      "items": [
+        "Source→Sink 流追踪，支持 sanitizer 净化",
+        "在 AST 上构建 CFG / 调用图 / 常量传播",
+        "Source/Sink 模式复用 matcher 精确匹配"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "嵌入式 SQL 预处理",
+      "items": [
+        "从 Java 注解/字符串与 MyBatis XML 抽取 SQL 片段",
+        "片段按方言重新解析，用 SQL 语义规则匹配",
+        "无需编写宿主语言模式"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "规则与输出",
+      "items": [
+        "YAML 声明式规则：模式 + 元变量 + 条件 + taint 模式",
+        "方言感知 rules.dialects 字段；内置 GaussDB 14 / PolarDB-MySQL 6 条",
+        "输出：JSON / SARIF / Text / HTML / Markdown / Semgrep"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "工程边界与计划",
+      "items": [
+        "MCP 子命令在根 main.rs 拦截，规避 cli↔mcp 循环依赖",
+        "并行分析：rayon 线程池 + tokio；web 可选 feature：auth/metrics/database",
+        "消费方：CI/CD（SARIF）、AI 助手（MCP 4 工具）、IDE 集成规划中"
+      ]
+    }
+  ]
+}

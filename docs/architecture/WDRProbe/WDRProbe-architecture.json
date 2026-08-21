@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "WDRProbe · 内部架构",
+    "subtitle": "GaussDB / openGauss WDR 报告解析 · SQLite 存储 · 执行计划诊断",
+    "quality_profile": "showcase",
+    "viewBox": [1720, 900]
+  },
+  "components": [
+    { "id": "cli", "type": "backend", "label": "CLI 命令行", "sublabel": "import · list · analyze · audit · export", "tag": "7 子命令", "pos": [70, 82], "size": [290, 92] },
+    { "id": "tui", "type": "backend", "label": "TUI 终端界面", "sublabel": "ratatui · 5 页面视图", "tag": "交互式浏览", "pos": [410, 82], "size": [290, 92] },
+    { "id": "frontend", "type": "frontend", "label": "桌面前端 (React)", "sublabel": "14 页面 · Recharts · 双语 i18n", "tag": "IPC 调用方", "pos": [900, 82], "size": [340, 92] },
+
+    { "id": "comparison-engine", "type": "backend", "label": "报告对比引擎", "sublabel": "SQL · 等待事件 · 对象统计", "tag": "改善 / 恶化评定", "pos": [410, 250], "size": [290, 92] },
+    { "id": "tauri-commands", "type": "backend", "label": "Tauri 命令层 (IPC)", "sublabel": "7 领域 · ~40 条命令", "tag": "invoke_handler", "pos": [900, 250], "size": [340, 92] },
+    { "id": "sql-audit", "type": "security", "label": "SQL 审核", "sublabel": "全表扫描 · 缺失索引 · 笛卡尔积", "tag": "性能反模式检测", "pos": [1300, 250], "size": [300, 92] },
+
+    { "id": "sqlite-store", "type": "database", "label": "SQLite 存储层", "sublabel": "r2d2 连接池 · rusqlite", "tag": "schema + CRUD", "pos": [70, 430], "size": [630, 92] },
+    { "id": "plan-analyzer", "type": "security", "label": "计划分析引擎", "sublabel": "13 条规则 · 算子知识库", "tag": "警告 + 优化建议", "pos": [900, 430], "size": [340, 92] },
+    { "id": "ogexplain-adapter", "type": "security", "label": "ogexplain 适配器", "sublabel": "25 规则诊断 · 热力图 / 瀑布图", "tag": "特性门控", "pos": [1300, 430], "size": [300, 92] },
+
+    { "id": "wdr-parser", "type": "backend", "label": "WDR 解析器", "sublabel": "scraper · openGauss v1/v2 双格式", "tag": "HTML → 结构化", "pos": [70, 610], "size": [290, 92] },
+    { "id": "sql-plan-parser", "type": "backend", "label": "执行计划解析器", "sublabel": "EXPLAIN · ANALYZE · PERFORMANCE", "tag": "nom · memmap2", "pos": [900, 610], "size": [340, 92] },
+
+    { "id": "wdr-html", "type": "external", "label": "WDR 报告文件", "sublabel": "GaussDB / openGauss HTML · v1/v2", "tag": "输入", "pos": [70, 760], "size": [290, 88] },
+    { "id": "sqlite-file", "type": "external", "label": "SQLite 数据库文件", "sublabel": "wdrprobe.db · bundled", "tag": "本地持久化", "pos": [410, 760], "size": [290, 88] },
+    { "id": "ogexplain-core", "type": "external", "label": "ogexplain-core", "sublabel": "EXPLAIN 解析 · 25 诊断规则", "tag": "可选依赖", "pos": [1300, 760], "size": [300, 88] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "接口层", "wraps": ["cli", "tui", "frontend"] },
+    { "kind": "region", "label": "核心层", "wraps": ["comparison-engine", "tauri-commands", "sql-audit", "sqlite-store", "plan-analyzer", "ogexplain-adapter", "wdr-parser", "sql-plan-parser"] },
+    { "kind": "region", "label": "外部依赖", "wraps": ["wdr-html", "sqlite-file", "ogexplain-core"] }
+  ],
+  "connections": [
+    { "id": "html-to-parser", "from": "wdr-html", "to": "wdr-parser", "label": "读取 WDR HTML 报告", "variant": "emphasis", "fromSide": "top", "toSide": "bottom" },
+    { "id": "parser-to-store", "from": "wdr-parser", "to": "sqlite-store", "label": "结构化数据写入", "variant": "emphasis", "fromSide": "top", "toSide": "bottom" },
+    { "id": "store-to-commands", "from": "sqlite-store", "to": "tauri-commands", "label": "报告 / 指标 / Top SQL 查询", "variant": "emphasis" },
+    { "id": "commands-to-frontend", "from": "tauri-commands", "to": "frontend", "label": "Tauri IPC invoke ↔ 响应", "variant": "emphasis", "fromSide": "top", "toSide": "bottom" },
+    { "id": "planparse-to-analyzer", "from": "sql-plan-parser", "to": "plan-analyzer", "label": "计划树 → 13 条规则检查", "variant": "emphasis", "fromSide": "top", "toSide": "bottom" },
+    { "id": "analyzer-to-commands", "from": "plan-analyzer", "to": "tauri-commands", "label": "诊断警告 + 优化建议", "variant": "emphasis", "fromSide": "top", "toSide": "bottom" },
+
+    { "id": "cli-to-store", "from": "cli", "to": "sqlite-store", "label": "import / list / analyze / audit / export", "fromSide": "bottom", "toSide": "top" },
+    { "id": "tui-to-store", "from": "tui", "to": "sqlite-store", "label": "DatabaseOperations 浏览查询", "fromSide": "bottom", "toSide": "top" },
+    { "id": "store-to-comparison", "from": "sqlite-store", "to": "comparison-engine", "label": "读取基准 / 目标报告", "fromSide": "top", "toSide": "bottom" },
+    { "id": "comparison-to-commands", "from": "comparison-engine", "to": "tauri-commands", "label": "对比摘要与图表数据", "fromSide": "right", "toSide": "left" },
+    { "id": "audit-to-commands", "from": "sql-audit", "to": "tauri-commands", "label": "审核问题 / 重写建议", "fromSide": "left", "toSide": "right", "labelDy": 70 },
+    { "id": "store-to-sqlite", "from": "sqlite-store", "to": "sqlite-file", "label": "rusqlite 读写 wdrprobe.db", "fromSide": "bottom", "toSide": "top" },
+    { "id": "commands-to-ogexplain", "from": "tauri-commands", "to": "ogexplain-adapter", "label": "EXPLAIN 解析 + 25 规则诊断", "fromSide": "bottom", "toSide": "top" },
+    { "id": "ogexplain-to-core", "from": "ogexplain-adapter", "to": "ogexplain-core", "label": "ogexplain-core 调用", "fromSide": "bottom", "toSide": "top", "labelDy": 24 }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "WDR 解析与入库", "items": ["openGauss v1 / v2 双 HTML 格式，scraper 解析，memmap2 处理大文件", "ProgressReporter 上报导入长任务进度", "schema 自动初始化 + 默认阈值 / 样例审核数据种子"] },
+    { "dot": "emerald", "title": "13 条执行计划规则", "items": ["全表扫描 · 嵌套循环高成本 · 笛卡尔积 · 分区裁剪 · 磁盘溢出", "实际 vs 估算行数偏差（10 倍阈值）→ 建议 ANALYZE 更新统计", "输出：警告 + 优化建议 + 计划元数据（成本 / 深度 / 节点数）"] },
+    { "dot": "amber", "title": "特性门控 diagnostic-engines", "items": ["CLI：diagnose / rewrite 子命令；Desktop：ogexplain 解析与诊断命令", "ogexplain-adapter：PlanNode → ExecutionPlanNode，25 规则，热力图 / 瀑布图", "metamorphosis-adapter + schema_extractor：SQL 重写（WDR 对象统计 → SchemaMap）"] },
+    { "dot": "rose", "title": "三壳共享 core 与数据流", "items": ["wdrprobe-core 为唯一库 crate：parsers / database / models / utils / progress", "TUI / CLI 直连 DatabaseOperations；Desktop 经 ~40 条 IPC 命令", "SQL 审核从 Top SQL 检测反模式；EXPLAIN 文本由命令层转交解析器"] },
+    { "dot": "violet", "title": "数据与导出", "items": ["SQLite：rusqlite bundled + r2d2 连接池，wdrprobe.db 位于应用数据目录", "导出：JSON / CSV 报告导出 + 数据完整性校验（export 命令域）", "审计日志：阈值变更、导入导出等操作全量留痕"] }
+  ]
+}

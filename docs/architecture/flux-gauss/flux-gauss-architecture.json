@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "flux-gauss · 内部架构",
+    "subtitle": "PL/pgSQL → Spring Boot + MyBatis 自动转换（Python + Rust 双引擎）",
+    "quality_profile": "showcase",
+    "viewBox": [1720, 880]
+  },
+  "components": [
+    { "id": "cli", "type": "frontend", "label": "CLI 入口", "sublabel": "fluxgauss -c config.yaml · --debug · --resume", "tag": "双引擎", "pos": [60, 80], "size": [280, 76] },
+    { "id": "mcp", "type": "frontend", "label": "MCP 服务器", "sublabel": "validate_sql · convert_sql", "tag": "stdio 协议", "pos": [380, 80], "size": [280, 76] },
+    { "id": "validate", "type": "backend", "label": "SQL 校验", "sublabel": "语法 · 包一致性 · 未定义变量", "tag": "Phase -1", "pos": [90, 280], "size": [180, 64] },
+    { "id": "parse", "type": "backend", "label": "解析与抽取", "sublabel": "AST → 过程/参数/注释/常量", "tag": "Phase 1", "pos": [330, 280], "size": [180, 64] },
+    { "id": "analyze", "type": "backend", "label": "语句分析", "sublabel": "DML · 游标 · 跨包调用 · GOTO", "tag": "Phase 2", "pos": [570, 280], "size": [180, 64] },
+    { "id": "generate", "type": "backend", "label": "代码生成", "sublabel": "Service · Mapper · XML · Test", "tag": "Phase 3", "pos": [810, 280], "size": [180, 64] },
+    { "id": "springout", "type": "backend", "label": "Spring Boot 项目", "sublabel": "Maven 骨架 · 生成产物", "tag": "输出", "pos": [1060, 280], "size": [200, 64] },
+    { "id": "incremental", "type": "backend", "label": "增量构建", "sublabel": "SHA-256 缓存 · 传递依赖", "tag": "manifest", "pos": [90, 460], "size": [180, 64] },
+    { "id": "expr", "type": "backend", "label": "表达式转换", "sublabel": "110+ 函数映射 · 类型推断", "tag": "核心", "pos": [570, 460], "size": [180, 64] },
+    { "id": "dsql", "type": "backend", "label": "动态 SQL 引擎", "sublabel": "EXECUTE IMMEDIATE → 动态 XML", "tag": "核心", "pos": [810, 460], "size": [180, 64] },
+    { "id": "report", "type": "backend", "label": "报告与日志", "sublabel": "Markdown 报告 · 断点续做", "tag": "辅助", "pos": [1060, 460], "size": [180, 64] },
+    { "id": "sql-src", "type": "external", "label": "PL/pgSQL 源文件", "sublabel": "OpenGauss / PostgreSQL 存储过程", "tag": "输入", "pos": [90, 670], "size": [180, 64] },
+    { "id": "ogsql", "type": "external", "label": "ogsql-parser 二进制", "sublabel": "OGSQL_BIN · JSON AST", "tag": "Rust", "pos": [330, 670], "size": [200, 64] },
+    { "id": "docker", "type": "external", "label": "Docker / Testcontainers", "sublabel": "opengauss 镜像 · 集成测试", "tag": "外部", "pos": [700, 670], "size": [200, 64] },
+    { "id": "maven", "type": "external", "label": "Maven / JDK 17", "sublabel": "mvn compile · mvn test", "tag": "验证", "pos": [1300, 670], "size": [200, 64] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "接口层", "wraps": ["cli", "mcp"] },
+    { "kind": "region", "label": "核心转换层", "wraps": ["validate", "parse", "analyze", "generate", "springout", "incremental", "expr", "dsql", "report"] },
+    { "kind": "region", "label": "外部依赖", "wraps": ["sql-src", "ogsql", "docker", "maven"] }
+  ],
+  "connections": [
+    { "id": "cli-validate", "from": "cli", "to": "validate", "label": "启动转换管线", "variant": "emphasis", "fromSide": "bottom", "toSide": "top" },
+    { "id": "validate-parse", "from": "validate", "to": "parse", "label": "校验通过", "variant": "emphasis", "fromSide": "right", "toSide": "left", "labelAt": [300, 328] },
+    { "id": "parse-analyze", "from": "parse", "to": "analyze", "label": "ProcedureInfo[]", "variant": "emphasis", "fromSide": "right", "toSide": "left", "labelAt": [540, 358] },
+    { "id": "analyze-generate", "from": "analyze", "to": "generate", "label": "Java 逻辑 · DML 方法", "variant": "emphasis", "fromSide": "right", "toSide": "left", "labelAt": [780, 358] },
+    { "id": "generate-springout", "from": "generate", "to": "springout", "label": "Service · Mapper · XML", "variant": "emphasis", "fromSide": "right", "toSide": "left", "labelAt": [1025, 358] },
+    { "id": "springout-maven", "from": "springout", "to": "maven", "label": "mvn compile / test", "variant": "emphasis", "fromSide": "right", "toSide": "top" },
+    { "id": "mcp-validate", "from": "mcp", "to": "validate", "label": "validate_sql 工具", "fromSide": "bottom", "toSide": "right" },
+    { "id": "mcp-generate", "from": "mcp", "to": "generate", "label": "convert_sql 工具", "fromSide": "bottom", "toSide": "top" },
+    { "id": "sqlsrc-ogsql", "from": "sql-src", "to": "ogsql", "label": "PL/pgSQL 文本", "fromSide": "right", "toSide": "left", "labelAt": [300, 748] },
+    { "id": "ogsql-parse", "from": "ogsql", "to": "parse", "label": "JSON AST", "fromSide": "top", "toSide": "bottom" },
+    { "id": "incremental-parse", "from": "incremental", "to": "parse", "label": "缓存 AST 复用", "fromSide": "top", "toSide": "bottom" },
+    { "id": "analyze-expr", "from": "analyze", "to": "expr", "label": "表达式节点", "fromSide": "bottom", "toSide": "top", "labelAt": [660, 358] },
+    { "id": "dsql-generate", "from": "dsql", "to": "generate", "label": "动态 XML 标签", "fromSide": "top", "toSide": "bottom" },
+    { "id": "generate-report", "from": "generate", "to": "report", "label": "转换报告 · 日志", "fromSide": "bottom", "toSide": "top" },
+    { "id": "docker-springout", "from": "docker", "to": "springout", "label": "opengauss 镜像", "fromSide": "top", "toSide": "right" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "增量机制",
+      "items": [
+        "manifest.json 记录每个 SQL 文件 SHA-256 内容哈希，仅重新解析变更文件",
+        "AST JSON 缓存于 .fluxgauss/ast/，未变更文件直接复用缓存 AST",
+        "跨包调用传递依赖追踪：被调用包变更时自动触发调用方重生成",
+        "--resume 基于 gen-checkpoint.json 断点续做，跳过已成功生成的包"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "双引擎与特性门控",
+      "items": [
+        "Python 引擎（~15300 行，评级 A-）：功能完整，支持 DDL 预扫描与过期包清理",
+        "Rust 引擎（~16700 行，评级 B+）：Rayon 多线程，适合 1000-30000 个 SP 大批量",
+        "两引擎共享同一 YAML 配置格式（fluxgauss.yaml）与增量/测试生成能力",
+        "PyInstaller 打包为独立二进制，可通过 fluxgauss.spec 一键分发"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "内部依赖",
+      "items": [
+        "validate 与 parse 共用同一 ogsql-parser 二进制（OGSQL_BIN / PATH 解析）",
+        "Rust 引擎通过 Cargo git 依赖直接链接 ogsql-parser v0.8.32 crate",
+        "集成测试依赖 Docker + Testcontainers 启动 opengauss 镜像",
+        "生成项目需 Java 17 + Maven 做 mvn compile / mvn test 编译验证"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "消费方",
+      "items": [
+        "AI 客户端（Claude Desktop / Cursor 等）经 --mcp stdio 调用 validate_sql / convert_sql",
+        "convert_sql 先自动执行校验，有错误即中止；skip_validation: true 可强制转换",
+        "ogsql-parser 自身也提供 MCP 服务器（ogsql-mcp）与 REST API（ogsql serve，端口 9527）",
+        "CI/CD 构建 Linux/macOS/Windows 二进制，双引擎回归测试同跑"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "生成产物与规划",
+      "items": [
+        "每个包生成 4 个文件：{Name}Service.java / Mapper.java / Mapper.xml / ServiceTest.java",
+        "pom.xml、application.yml、DemoApplication 等骨架仅缺失时写入，重复生成需先删除",
+        "生成代码携带源码溯源注释，--debug 注入精确 SQL 行号便于逐行比对",
+        "docs/plans 规划中：动态 SQL 更多场景、Rust 模块化 statements/ 子模块重构"
+      ]
+    }
+  ]
+}

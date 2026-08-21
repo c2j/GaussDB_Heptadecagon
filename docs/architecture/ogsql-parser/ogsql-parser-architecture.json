@@ -1,0 +1,513 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "ogsql-parser · 内部架构",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1720,
+      880
+    ],
+    "views": [
+      {
+        "id": "parse-path",
+        "label": "主路径 · 解析与分析管线",
+        "focus": [
+          "sql-input",
+          "tokenizer",
+          "parser",
+          "ast",
+          "analyzer",
+          "lib",
+          "consumers"
+        ],
+        "note": "SQL 文本 → 分词 → 递归下降解析 → AST → serde JSON 往返（库 API）→ 下游消费方；语义分析/反模式检测为 AST 分支"
+      },
+      {
+        "id": "integration-path",
+        "label": "集成路径 · iBatis/Java",
+        "focus": [
+          "xml-input",
+          "javasrc",
+          "ibatis",
+          "java",
+          "parser"
+        ],
+        "note": "iBatis/MyBatis XML 与 Java 源码经提取后馈入核心 Parser 产出 AST"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "cli",
+      "type": "frontend",
+      "label": "CLI 二进制",
+      "sublabel": "parse/format/validate/json2sql",
+      "tag": "接口",
+      "pos": [
+        60,
+        85
+      ],
+      "size": [
+        160,
+        64
+      ]
+    },
+    {
+      "id": "tui",
+      "type": "frontend",
+      "label": "TUI 沙盒",
+      "sublabel": "ratatui playground",
+      "tag": "接口",
+      "pos": [
+        300,
+        85
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "http",
+      "type": "frontend",
+      "label": "HTTP API",
+      "sublabel": "axum /api/* · Swagger",
+      "tag": "接口",
+      "pos": [
+        530,
+        85
+      ],
+      "size": [
+        160,
+        64
+      ]
+    },
+    {
+      "id": "mcp",
+      "type": "frontend",
+      "label": "MCP Server",
+      "sublabel": "rmcp stdio · 7 工具",
+      "tag": "接口",
+      "pos": [
+        770,
+        85
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "lib",
+      "type": "frontend",
+      "label": "库 API",
+      "sublabel": "serde AST · SQL↔JSON 往返",
+      "tag": "出口",
+      "pos": [
+        1020,
+        85
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "tokenizer",
+      "type": "backend",
+      "label": "Tokenizer 分词器",
+      "sublabel": "724 关键字 · 多编码",
+      "pos": [
+        60,
+        280
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "parser",
+      "type": "backend",
+      "label": "Parser 递归下降",
+      "sublabel": "select/dml/ddl/plpgsql",
+      "tag": "核心",
+      "pos": [
+        340,
+        280
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "ast",
+      "type": "database",
+      "label": "AST 语义模型",
+      "sublabel": "219+ 类型 · 无损耗往返",
+      "tag": "数据中枢",
+      "pos": [
+        640,
+        274
+      ],
+      "size": [
+        180,
+        76
+      ]
+    },
+    {
+      "id": "formatter",
+      "type": "backend",
+      "label": "Formatter 格式化",
+      "sublabel": "结构化 AST + token 级配置",
+      "pos": [
+        940,
+        280
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "analyzer",
+      "type": "backend",
+      "label": "Analyzer 语义分析",
+      "sublabel": "动态SQL/游标/MERGE/指纹",
+      "pos": [
+        300,
+        470
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "linter",
+      "type": "backend",
+      "label": "Linter 反模式检测",
+      "sublabel": "53 规则 · 4 级严重度",
+      "pos": [
+        560,
+        470
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "ibatis",
+      "type": "backend",
+      "label": "iBatis 解析",
+      "sublabel": "XML Mapper · 动态 SQL",
+      "pos": [
+        790,
+        470
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "java",
+      "type": "backend",
+      "label": "Java SQL 提取",
+      "sublabel": "tree-sitter-java",
+      "pos": [
+        1040,
+        470
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "sql-input",
+      "type": "external",
+      "label": "SQL 文本",
+      "sublabel": "DML/DDL/PL-pgSQL",
+      "tag": "输入",
+      "pos": [
+        60,
+        760
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "xml-input",
+      "type": "external",
+      "label": "iBatis/MyBatis XML",
+      "sublabel": "Mapper 文件",
+      "tag": "输入",
+      "pos": [
+        790,
+        760
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "javasrc",
+      "type": "external",
+      "label": "Java 源码",
+      "sublabel": "注解/字符串/方法调用",
+      "tag": "输入",
+      "pos": [
+        1040,
+        760
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "regression",
+      "type": "external",
+      "label": "openGauss 回归套件",
+      "sublabel": "1409/1409 用例",
+      "pos": [
+        1260,
+        760
+      ],
+      "size": [
+        170,
+        64
+      ]
+    },
+    {
+      "id": "consumers",
+      "type": "external",
+      "label": "下游消费方",
+      "sublabel": "ogexplain·codeweb·astgrep",
+      "tag": "消费",
+      "pos": [
+        1470,
+        760
+      ],
+      "size": [
+        190,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "接口层",
+      "wraps": [
+        "cli",
+        "tui",
+        "http",
+        "mcp",
+        "lib"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "核心层 · 解析与分析",
+      "wraps": [
+        "tokenizer",
+        "parser",
+        "ast",
+        "formatter",
+        "analyzer",
+        "linter",
+        "ibatis",
+        "java"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "外部依赖",
+      "wraps": [
+        "sql-input",
+        "xml-input",
+        "javasrc",
+        "regression",
+        "consumers"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "e1",
+      "from": "sql-input",
+      "to": "tokenizer",
+      "label": "SQL 文本输入",
+      "variant": "emphasis",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "e2",
+      "from": "tokenizer",
+      "to": "parser",
+      "label": "Token 流",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "e3",
+      "from": "parser",
+      "to": "ast",
+      "label": "AST 构建",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "e4",
+      "from": "ast",
+      "to": "analyzer",
+      "label": "语义分析",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "via": [
+        [
+          730,
+          420
+        ],
+        [
+          385,
+          420
+        ]
+      ]
+    },
+    {
+      "id": "e5",
+      "from": "ast",
+      "to": "lib",
+      "label": "serde 序列化",
+      "variant": "emphasis",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "via": [
+        [
+          730,
+          230
+        ],
+        [
+          1105,
+          230
+        ]
+      ]
+    },
+    {
+      "id": "e6",
+      "from": "lib",
+      "to": "consumers",
+      "label": "AST JSON 交付",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "top",
+      "via": [
+        [
+          1530,
+          117
+        ],
+        [
+          1530,
+          700
+        ],
+        [
+          1565,
+          700
+        ]
+      ]
+    },
+    {
+      "id": "e7",
+      "from": "ast",
+      "to": "linter",
+      "label": "反模式检测",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "e8",
+      "from": "ast",
+      "to": "formatter",
+      "label": "格式化重排",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "e10",
+      "from": "xml-input",
+      "to": "ibatis",
+      "label": "Mapper 文件",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "e12",
+      "from": "javasrc",
+      "to": "java",
+      "label": "源码输入",
+      "fromSide": "top",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "解析管线与特性门控",
+      "items": [
+        "纯手写递归下降解析器，不依赖解析器生成器；核心零外部运行时依赖",
+        "features 门控：cli / serve / serve-minimal / tui / mcp / ibatis / java / full",
+        "Windows 7 Tier-3 目标：nightly + -Zbuild-std 静态链接 CRT",
+        "CLI 12 个子命令：parse/tokenize/format/validate/json2sql/parse-xml/parse-java/validate-xml/validate-java/serve/playground/mcp"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "语义分析与校验",
+      "items": [
+        "动态 SQL 变量追踪 + EXECUTE IMMEDIATE 参数化重写",
+        "MERGE 语义校验 · PACKAGE 一致性 · PL 变量/未定义函数严格校验",
+        "返回游标分析 · 事务分析 · 查询指纹 · Schema 加载（索引感知）"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "集成与格式化",
+      "items": [
+        "iBatis/MyBatis：XML 动态 SQL AST、变体展开、Java 参数类型推断（__XML_PARAM_*__）",
+        "Java 源码：tree-sitter-java 提取 SQL（字符串拼接/注解/方法调用/PreparedStatement 回填）",
+        "两段式格式化：结构化 AST 重排 + token 级配置（关键字大小写/逗号风格/行宽）"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "接口与外部依赖",
+      "items": [
+        "MCP 7 工具：parse / tokenize / format / validate / json2sql / parse_xml / parse_java",
+        "HTTP：/api/parse|json2sql|format|tokenize|validate|parse-xml|validate-xml|parse-java|validate-java + Swagger/SARIF/multipart",
+        "可选依赖全 feature 门控：axum/tokio/ratatui/rmcp/tree-sitter-java/quick-xml/clap",
+        "多编码：UTF-8/GB18030/BIG5/EUC-JP/EUC-KR/UTF-16（encoding_rs）"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "消费方与计划",
+      "items": [
+        "下游 AST 消费：ogexplain-analyzer / metamorphosis / codeweb / astgrep，AST 变更影响面大",
+        "回归：1409/1409 openGauss 回归用例 + 1980+ 单元测试；lib/openGauss-server 子模块参考",
+        "计划：GaussDB 语法覆盖持续扩展、strict 校验增强"
+      ]
+    }
+  ]
+}
